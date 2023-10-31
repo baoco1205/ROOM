@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div>REGISTER PAGE</div>
+    <div>User name: <input type="text" id="username" /></div>
+    <div>Password: <input type="text" name="" id="password" /></div>
+    <div>Name: <input type="text" id="name" /></div>
+    <div>Address: <input type="text" name="" id="address" /></div>
+    <div>Phone: <input type="text" id="username" /></div>
+    <div>Role: <input type="text" name="" id="role" /></div>
+    <div>Note: <input type="text" name="" id="note" /></div>
+    <button onclick="register()">Login</button>
+  </body>
+  <script src="../js/jquery-3.7.1.min.js"></script>
+  <script>
+    function setCookie(cname, cvalue, exdays) {
+      const d = new Date();
+      d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000);
+      let expires = "expires=" + d.toUTCString();
+      document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+    }
+
+    function getCookie(cname) {
+      let name = cname + "=";
+      let decodedCookie = decodeURIComponent(document.cookie);
+      let ca = decodedCookie.split(";");
+      for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) == " ") {
+          c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+          return c.substring(name.length, c.length);
+        }
+      }
+      return "";
+    }
+    function register() {
+      $.ajax({
+        url: "/register",
+        type: "POST",
+        data: {
+          username: $("#username").val(),
+          password: $("#password").val(),
+          name: $(name).val(),
+          address: $(address).val(),
+          role: $("role").val(),
+          note: $("note").val(),
+          phone: $("phone").val(),
+        },
+      })
+        .then((data) => {
+          console.log("data là: " + data.token);
+          setCookie("token", data.token, 1);
+        })
+        .catch((err) => {
+          console.log("CHUA GET DC" + err);
+        });
+    }
+  </script>
+</html>
