@@ -2,7 +2,7 @@ const express = require("express");
 var routerRequest = express.Router();
 const requestModel = require("../models/requests");
 const usersModel = require("../models/users");
-const checkRole = require("../controler/checkRole1");
+const checkRole = require("./checkRole");
 
 var getRequest = (req, res) => {
   var id = req.params.requestId;

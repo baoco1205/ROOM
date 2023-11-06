@@ -1,7 +1,7 @@
 var jwt = require("jsonwebtoken");
 const keyToken = "matkhautokenoday";
 const usersModel = require("../models/users");
-var checkLogin = function (req, res, next) {
+var checkLoginToken = function (req, res, next) {
   // var token = req.body.token;
   var cookie = req.cookies;
   console.log(cookie);
@@ -18,5 +18,24 @@ var checkLogin = function (req, res, next) {
       res.redirect("/login");
     });
 };
+var checkLogin = function (req, res, next) {
+  var username = req.body.username;
+  var password = req.body.password;
+  usersModel
+    .findOne({ username: username, password: password })
+    .then((data) => {
+      if (data) {
+        console.log("Pass Login");
+        next();
+      } else {
+        res.json({ Messsage: "WRONG PASSWORD OR USERNAME" });
+      }
+    })
+    .catch((err) => {
+      var error = new Error("HAS ERROR AT LOGIN");
+      error.statusCode = 500;
+      throw error;
+    });
+};
 
-module.exports = { checkLogin };
+module.exports = { checkLogin, checkLoginToken };

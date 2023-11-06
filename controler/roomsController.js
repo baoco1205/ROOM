@@ -1,5 +1,5 @@
 const roomsModel = require("../models/rooms");
-const checkRole = require("./checkRole1");
+const checkRole = require("./checkRole");
 var getRoom = (req, res) => {
   var status = req.body.status;
   if (status) {

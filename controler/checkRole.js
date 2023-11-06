@@ -1,27 +1,56 @@
-var checkRoleUser = function (req, res, next) {
-  var role = req.body.infouser.role;
-  console.log(role);
-  if (role <= 1) {
-    next();
-  } else {
-    res.redirect("/home");
-  }
+const usersModel = require("../models/users");
+
+var checkRole = async function (req, res, next) {
+  var username = req.body.username;
+  var password = req.body.password;
+  // console.log("CHECK::::" + username, password);
+  return await usersModel
+    .findOne({ username: username, password: password })
+    .then((data) => {
+      req.body.data = data;
+
+      var newid = data._id;
+      //newid tra ve 1 object: new ObjectId("6531f755ca71de5b06f279fc")
+      var id = newid.toString();
+      // su dung toString de ra ket qua : 6531f755ca71de5b06f279fc
+      req.body.id = id;
+
+      var role = parseInt(data.role);
+      req.body.role = role;
+      // console.log("role:::::" + role);
+
+      return role;
+    })
+    .catch((err) => {
+      res.status(500).json(err);
+    });
 };
-var checkRoleManager = function (req, res, next) {
-  var role = req.body.infouser.role;
-  if (role <= 2) {
+
+var checkRoleUser = async function (req, res, next) {
+  if ((await checkRole(req, res, next)) >= 1) {
     next();
   } else {
-    res.redirect("/home");
-  }
-};
-var checkRoleAdmin = function (req, res, next) {
-  var role = req.body.infouser.role;
-  if (role <= 3) {
-    next();
-  } else {
-    res.redirect("/home");
+    res.json("LOGIN FAILS");
   }
 };
 
-module.exports = { checkRoleUser, checkRoleManager, checkRoleAdmin };
+var checkRoleManager = async function (req, res, next) {
+  if ((await checkRole(req, res, next)) >= 2) {
+    console.log("Pass check role");
+    next();
+  } else {
+    res.json("YOUR ROLE NOT ENOUGH");
+  }
+};
+var checkRoleAdmin = async function (req, res, next) {
+  var role = await checkRole(req, res, next);
+  // console.log("TESTTT" + role);
+  if (role >= 3) {
+    // console.log("xxxxx");
+    next();
+  } else {
+    res.json("LOGIN FAILS");
+    // res.redirect("/home");
+  }
+};
+module.exports = { checkRoleUser, checkRoleAdmin, checkRoleManager };

@@ -1,7 +1,7 @@
 const reportsModel = require("../models/reports");
 const roomsModel = require("../models/rooms");
 const usersModel = require("../models/users");
-const checkRole = require("../controler/checkRole1");
+const checkRole = require("./checkRole");
 const UNSENT = 0;
 const SENT = 1;
 var getReportByDate = (req, res) => {

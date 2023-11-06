@@ -22,9 +22,9 @@ const reportsModel = require("./models/reports.js");
 const requestsModel = require("./models/requests.js");
 
 //Controler
-const checkRole = require("./controler/checkRole.js");
+const checkRole = require("./controler/checkRole2.js");
 const checkLogin = require("./controler/checkLogin.js");
-const checkRole1 = require("./controler/checkRole1.js");
+const checkRole1 = require("./controler/checkRole.js");
 const calendarLogin = require("./controler/calendarSaveLogin.js");
 const createToken = require("./controler/tokenCreate.js");
 //config cookie Parser
@@ -62,6 +62,11 @@ app.use(
     store
   )
 );
+app.use((err, req, res, next) => {
+  var statusCode = err.statusCode;
+  var message = err.messageErr;
+  res.status(statusCode).json(message);
+});
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -129,18 +134,15 @@ app.post(
     res.redirect("/home");
   }
 );
+
 app.post(
   "/login",
-  passport.authenticate("local", {
-    // successRedirect: "/home",
-    failureRedirect: "/login",
-    session: true,
-  }),
+  passport.authenticate("local", {}),
   checkRole1.checkRoleUser,
   createToken.createToken,
   calendarLogin.saveTimeLogin,
   (req, res, next) => {
-    res.json("HOME");
+    res.status(200).json({ statusCode: "Login Success", data: req.body.data });
   }
 );
 
