@@ -14,6 +14,7 @@ const UsersSchema = new Schema(
     phone: String,
     role: String,
     note: String,
+    deleted: String,
   },
   { collection: "users" }
 );

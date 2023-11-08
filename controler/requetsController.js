@@ -5,15 +5,54 @@ const usersModel = require("../models/users");
 const checkRole = require("./checkRole");
 
 var getRequest = (req, res) => {
-  var id = req.params.requestId;
-  requestModel
-    .findById({ id })
-    .then((data) => {
-      res.json(id);
-    })
-    .catch((err) => {
-      res.status(500).json();
-    });
+  var { key, status, date } = req.body;
+  var tempDate = new Date(date);
+  var dateDatabase = tempDate.toISOString().split("T")[0];
+  if (key === date) {
+    requestModel
+      .find({ date: dateDatabase })
+      .then((data) => {
+        res.json({ message: "GET SUCCESS", data: data });
+      })
+      .catch((err) => {
+        var error = new Error();
+        error.statusCode = 400;
+        throw err;
+      });
+  } else if (key === status) {
+    requestModel
+      .find({ status: status })
+      .then((data) => {
+        res.json({ message: "GET SUCCESS", data: data });
+      })
+      .catch((err) => {
+        var error = new Error();
+        error.statusCode = 400;
+        throw err;
+      });
+  } else if (key === dateStatus) {
+    requestModel
+      .find({ date: dateDatabase, status: status })
+      .then((data) => {
+        res.json({ message: "GET SUCCESS", data: data });
+      })
+      .catch((err) => {
+        var error = new Error();
+        error.statusCode = 400;
+        throw err;
+      });
+  } else if (!key) {
+    requestModel
+      .find()
+      .then((data) => {
+        res.json({ message: "GET SUCCESS", data: data });
+      })
+      .catch((err) => {
+        var error = new Error();
+        error.statusCode = 400;
+        throw err;
+      });
+  }
 };
 var getByDate = (req, res) => {
   var date = req.body.date;

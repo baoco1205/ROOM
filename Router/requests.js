@@ -1,10 +1,32 @@
 const express = require("express");
 var routerRequests = express.Router();
 var requestController = require("../controler/requetsController");
+var checkRole = require("../controler/checkRole");
+var checkLogin = require("../controler/checkLogin");
 
-routerRequests.get("/request/:requestId", requestController.getRequest);
-routerRequests.post("/request", requestController.createRequest);
-routerRequests.put("/request", requestController.updateRequest);
-routerRequests.delete("/request", requestController.deleteRequest);
+routerRequests.get(
+  "/request",
+  checkLogin.checkLogin,
+  checkRole.checkRoleUser,
+  requestController.getRequest
+);
+routerRequests.post(
+  "/request",
+  checkLogin.checkLogin,
+  checkRole.checkRoleUser,
+  requestController.createRequest
+);
+routerRequests.put(
+  "/request",
+  checkLogin.checkLogin,
+  checkRole.checkRoleManager,
+  requestController.updateRequest
+);
+routerRequests.delete(
+  "/request",
+  checkLogin.checkLogin,
+  checkRole.checkRoleManager,
+  requestController.deleteRequest
+);
 
 module.exports = routerRequests;

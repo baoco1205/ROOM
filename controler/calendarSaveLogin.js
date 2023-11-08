@@ -6,6 +6,7 @@ var saveTimeLogin = function (req, res, next) {
   // console.log("TESTTTOKEN::::" + token);
   var today = new Date();
   var datetimeVN = today.toLocaleString("vi-VN");
+  var date = datetimeVN.split(" ")[1];
   calendarLogin
     .create({ timeLogin: datetimeVN, username: username, token: token })
     .then((data) => {

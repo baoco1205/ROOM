@@ -7,10 +7,11 @@ const Schema = mongoose.Schema;
 
 const roomsSchema = new Schema(
   {
-    roomSize: String,
-    numberCustomer: String,
-    floor: String,
-    status: String,
+    roomSize: Number,
+    numberCustomer: Number,
+    floor: Number,
+    status: Number,
+    deleted: Number,
   },
   { collection: "rooms" }
 );

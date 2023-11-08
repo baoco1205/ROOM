@@ -28,8 +28,9 @@ var checkLogin = function (req, res, next) {
         console.log("Pass Login");
         next();
       } else {
-        res.json({ Messsage: "WRONG PASSWORD OR USERNAME" });
+        res.status(400).json({ Messsage: "WRONG PASSWORD OR USERNAME" });
       }
+      ``;
     })
     .catch((err) => {
       var error = new Error("HAS ERROR AT LOGIN");

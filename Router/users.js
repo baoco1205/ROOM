@@ -12,6 +12,7 @@ routerUsers.get(
 );
 routerUsers.post(
   "/users",
+  checkLogin.checkLogin,
   checkRole.checkRoleManager,
   userController.createUser
 );
@@ -22,9 +23,20 @@ routerUsers.post(
   checkRole.checkRoleUser,
   userController.getMyInfo
 );
-// routerUsers.post("/users/khachhang", userController.createCustomer);
+routerUsers.post(
+  "/users/updatemyself",
+  checkLogin.checkLogin,
+  userController.updateMySelf
+);
+
 //update user
-routerUsers.put("/users", checkLogin.checkLogin, userController.updateUser);
+routerUsers.put(
+  "/users",
+  checkLogin.checkLogin,
+  checkRole.checkRoleManager,
+  userController.updateUser
+);
+//delete user
 routerUsers.delete(
   "/users",
   checkLogin.checkLogin,

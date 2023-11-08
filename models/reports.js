@@ -13,6 +13,7 @@ const reportsSchema = new Schema(
     status: String,
     username: String,
     date: String,
+    deleted: String,
   },
   { collection: "reports" }
 );

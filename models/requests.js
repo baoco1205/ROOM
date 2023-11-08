@@ -9,10 +9,11 @@ const Schema = mongoose.Schema;
 
 const requestsSchema = new Schema(
   {
-    date: String,
+    date: Date,
     numberCustomer: String,
     status: String,
     floor: String,
+    deleted: String,
   },
   { collection: "requests" }
 );

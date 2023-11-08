@@ -27,6 +27,7 @@ const checkLogin = require("./controler/checkLogin.js");
 const checkRole1 = require("./controler/checkRole.js");
 const calendarLogin = require("./controler/calendarSaveLogin.js");
 const createToken = require("./controler/tokenCreate.js");
+const checkPassport = require("./controler/checkPassport.js");
 //config cookie Parser
 var cookieParser = require("cookie-parser");
 app.use(cookieParser());
@@ -70,7 +71,7 @@ app.use((err, req, res, next) => {
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use("/public", express.static(path.join(__dirname, "public")));
+// app.use("/public", express.static(path.join(__dirname, "public")));
 app.get("/home", (req, res, next) => {
   res.json("HOME PAGE");
 });
@@ -142,49 +143,56 @@ app.post(
   createToken.createToken,
   calendarLogin.saveTimeLogin,
   (req, res, next) => {
-    res.status(200).json({ statusCode: "Login Success", data: req.body.data });
+    res.status(200).json({ message: "200", data: req.body.data });
   }
 );
-
-passport.use(
-  new localStrategy((username, password, done) => {
-    console.log(username, password);
-    usersModel
-      .findOne({ username: username, password: password })
-      .then((data) => {
-        if (data) {
-          // console.log(data.username);
-          // return done(null, { data: data, active: true });
-          return done(null, {
-            username: data.username,
-            password: data.password,
-            id: data.id,
-            active: true,
-          });
-        } else {
-          done(null, false);
-        }
-      })
-      .catch((err) => {
-        return done(err);
-      });
-  })
-);
-passport.serializeUser((user, done) => {
-  done(null, user.id);
+app.post("/checkpassport", checkPassport.checkLogin, (req, res, next) => {
+  console.log(req.user.data._id);
+  res.json("Pass Passport");
 });
-passport.deserializeUser((id, done) => {
-  // console.log("1");
-  usersModel
-    .findById({ _id: id })
-    .then((data) => {
-      // console.log("ID LA ::::" + id);
-      done(null, data);
-    })
-    .catch((err) => {
-      done(err);
-    });
+app.post("/checkinfo", checkPassport.checkLogin, (req, res, next) => {
+  res.json(req.user);
 });
+// passport.use(
+//   new localStrategy((username, password, done) => {
+//     // console.log(username, password);
+//     usersModel
+//       .findOne({ username: username, password: password })
+//       .then((data) => {
+//         if (data) {
+//           // console.log(data.username);
+//           // return done(null, { data: data, active: true });
+//           return done(null, {
+//             username: data.username,
+//             password: data.password,
+//             id: data.id,
+//             active: true,
+//           });
+//         } else {
+//           done(null, false);
+//         }
+//       })
+//       .catch((err) => {
+//         return done(err);
+//       });
+//   })
+// );
+// passport.serializeUser((user, done) => {
+//   done(null, user.id);
+// });
+// passport.deserializeUser((id, done) => {
+//   // console.log("1");
+//   usersModel
+//     .findById({ _id: id })
+//     .then((data) => {
+//       // console.log("ID LA ::::" + id);
+//       done(null, data);
+//     })
+//     .catch((err) => {
+//       done(err);
+//     });
+// });
 app.listen(port, () => {
   console.log("CONNECT AT : " + port);
 });
+module.exports = { app };
