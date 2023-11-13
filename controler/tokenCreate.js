@@ -3,8 +3,8 @@ var jwt = require("jsonwebtoken");
 
 const KEY_TOKEN = "matkhautokenoday";
 
-var createToken = async function (req, res, next) {
-  var id = await req.body.id;
+var createToken =  function (req, res, next) {
+  var id =  req.body.id;
   // console.log(id);
   userModel
     .findById({ _id: id })

@@ -1,165 +1,147 @@
 const express = require("express");
-var routerRequest = express.Router();
 const requestModel = require("../models/requests");
-const usersModel = require("../models/users");
-const checkRole = require("./checkRole");
 
-var getRequest = (req, res) => {
-  var { key, status, date } = req.body;
-  var tempDate = new Date(date);
-  var dateDatabase = tempDate.toISOString().split("T")[0];
-  if (key === date) {
+var getRequest = (req, res, next) => {
+  var { key, valueKey } = req.body;
+  if (key) {
+    switch (key) {
+      case "date": {
+        requestModel
+          .find({ date: valueKey })
+          .then((data) => {
+            res.json({ message: "GET DATA FOR DATE", data: data });
+          })
+          .catch((err) => {
+            var error = new Error("GET REQUEST FAILS!!!: " + err);
+            error.statusCode = 500;
+            throw error;
+          });
+        break;
+      }
+
+      case "status": {
+        requestModel
+          .find({ status: valueKey })
+          .then((data) => {
+            res.json({ message: "GET DATA FOR DATE", data: data });
+          })
+          .catch((err) => {
+            var error = new Error("GET REQUEST FAILS!!!: " + err);
+            error.statusCode = 500;
+            throw error;
+          });
+        break;
+      }
+    }
+  } else {
     requestModel
-      .find({ date: dateDatabase })
+      .find({})
       .then((data) => {
-        res.json({ message: "GET SUCCESS", data: data });
+        res.json({ message: "GET REQUEST SUCCESS", data: data });
       })
       .catch((err) => {
-        var error = new Error();
+        var error = new Error("CAN'T NOT GET YOUR REPORT" + err);
         error.statusCode = 400;
-        throw err;
-      });
-  } else if (key === status) {
-    requestModel
-      .find({ status: status })
-      .then((data) => {
-        res.json({ message: "GET SUCCESS", data: data });
-      })
-      .catch((err) => {
-        var error = new Error();
-        error.statusCode = 400;
-        throw err;
-      });
-  } else if (key === dateStatus) {
-    requestModel
-      .find({ date: dateDatabase, status: status })
-      .then((data) => {
-        res.json({ message: "GET SUCCESS", data: data });
-      })
-      .catch((err) => {
-        var error = new Error();
-        error.statusCode = 400;
-        throw err;
-      });
-  } else if (!key) {
-    requestModel
-      .find()
-      .then((data) => {
-        res.json({ message: "GET SUCCESS", data: data });
-      })
-      .catch((err) => {
-        var error = new Error();
-        error.statusCode = 400;
-        throw err;
+        throw error;
       });
   }
 };
-var getByDate = (req, res) => {
-  var date = req.body.date;
-  requestModel
-    .find({ date: date })
-    .then((data) => {
-      res.json(data);
-    })
-    .catch((err) => {
-      res.json(err);
-    });
-};
-var createRequest = (req, res) => {
-  var { date, numberCustomer, status, floor, idRequest } = body.req;
-  requestModel
-    .create({
-      data: date,
-      numberCustomer: numberCustomer,
-      status: status,
-      floor: floor,
-    })
-    .then((data) => {
-      res.json(" REQUEST CREATE SUCCESS");
-    })
-    .catch((err) => res.status(500).json(err));
-};
-var changeDateRequestAndUpdate = (req, res) => {
-  var { id, date, numberCustomer, status, floor } = req.body;
+var createRequest = (req, res, next) => {
+  var { date, numberCustomer, status, floor } = req.body;
 
-  usersModel
-    .findById({ _id: id })
+  requestModel
+    .findOne({ date: date, floor: floor })
     .then((data) => {
-      role = data.role;
-      //1 la role user
-      if (data.date && data.floor) {
-        res.json("DATE OR FLOOR IS DUPLICATED");
-      } else if (data.role > 1) {
-        requestModel
-          .findByIdAndUpdate(
-            { _id: idRequest },
-            {
-              date: date,
-              numberCustomer: numberCustomer,
-              status: status,
-              floor: floor,
-            },
-            new true()
-          )
-          .then((data) => {
-            res.json("UPDATE SUCCESS");
-          })
-          .catch((err) => {
-            res.status(500).json("UPDATE FAILS");
-          });
+      if (data) {
+        res.json({ message: "DUPLICATED INFO" });
       } else {
-        res.jsoN("NOT ENOUGT PERMISSION ");
-      }
-    })
-    .catch((err) => {
-      res.json(err);
-    });
-};
-var deleteRequest =
-  (checkRole.checkRoleManager,
-  (req, res) => {
-    var id = body.req.id;
-    requestModel
-      .findByIdAndDelete({ _id: id })
-      .then((data) => {
-        res.json("DELETE SUCCESS");
-      })
-      .catch((err) => {
-        res.json(err);
-      });
-  });
-var updateRequest = (req, res) => {
-  var { id, date, numberCustomer, status, floor } = req.body;
-
-  usersModel.findById({ _id: id }).then((data) => {
-    if (data.role > 1) {
-      requestModel
-        .findByIdAndUpdate(
-          { _id: idRequest },
-          {
+        requestModel
+          .create({
             date: date,
             numberCustomer: numberCustomer,
             status: status,
             floor: floor,
-          },
-          new true()
-        )
-        .then((data) => {
-          res.json("UPDATE SUCCESS");
-        })
-        .catch((err) => {
-          res.status(500).json("UPDATE FAILS");
-        });
-    } else {
-      res.jsoN("NOT ENOUGT PERMISSION ");
-    }
-  });
+            deleted: 0,
+          })
+          .then((data) => {
+            res.json({ message: "CREATE SUCCESS", data: data });
+          })
+          .catch((err) => {
+            var error = new Error();
+            error.statusCode = 404;
+            throw error;
+          });
+      }
+    })
+    .catch((err) => {
+      var error = new Error();
+      error.statusCode = 404;
+      throw error;
+    });
 };
+var deleteRequest = (req, res, next) => {
+  var { idList } = req.body;
+  requestModel
+    .deleteMany({ _id: { $in: idList } })
+    .then((data) => {
+      res.json({ message: "DELETE SUCCESS", data: data });
+    })
+    .catch((err) => {
+      var error = new Error();
+      error.statusCode = 404;
+      throw error;
+    });
+};
+var changeDateRequestAndUpdate = (req, res, next) => {
+  var { _id, date, numberCustomer, floor } = req.body;
+  requestModel
+    .findOne({ date: date, floor: floor })
+    .then((data) => {
+      if (data) {
+        console.log(data);
+        res.json({ message: "UPDATE FAILS, DATE AND FLOOR IS DUPLICATED" });
+      } else {
+        requestModel
+          .findById({ _id: _id })
+          .then((data) => {
+            if (data) {
+              requestModel
+                .create({
+                  numberCustomer: data.numberCustomer,
+                  floor: floor,
+                  date: date,
+                  status: 1,
+                  deleted: 0,
+                })
+                .then((data) => res.json({ message: "CHANGE DATA SUCCESS" }))
+                .catch((err) => {
+                  var error = new Error();
+                  error.statusCode = 404;
+                  throw error;
+                });
+            } else {
+              res.json("WRONG ID");
+            }
+          })
+          .catch((err) => {
+            var error = new Error();
+            error.statusCode = 404;
+            throw error;
+          });
+      }
+    })
+    .catch((err) => {
+      var error = new Error();
+      error.statusCode = 404;
+      throw error;
+    });
+};
+var updateRequest = (req, res, next) => {};
+
 module.exports = {
   createRequest,
   deleteRequest,
   changeDateRequestAndUpdate,
   updateRequest,
   getRequest,
-  getByDate,
 };

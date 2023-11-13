@@ -6,25 +6,21 @@ var checkLogin = require("../controler/checkLogin");
 
 routerRequests.get(
   "/request",
-  checkLogin.checkLogin,
   checkRole.checkRoleUser,
   requestController.getRequest
 );
 routerRequests.post(
   "/request",
-  checkLogin.checkLogin,
   checkRole.checkRoleUser,
   requestController.createRequest
 );
 routerRequests.put(
   "/request",
-  checkLogin.checkLogin,
-  checkRole.checkRoleManager,
-  requestController.updateRequest
+  checkRole.checkRoleUser,
+  requestController.changeDateRequestAndUpdate
 );
 routerRequests.delete(
   "/request",
-  checkLogin.checkLogin,
   checkRole.checkRoleManager,
   requestController.deleteRequest
 );

@@ -1,6 +1,7 @@
 var calendarLogin = require("../models/calendarLogin");
 
 var saveTimeLogin = function (req, res, next) {
+  // console.log("req.user", req.user);
   var username = req.body.username;
   var token = req.body.token;
   // console.log("TESTTTOKEN::::" + token);

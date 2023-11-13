@@ -9,7 +9,7 @@ var getRoom = (req, res) => {
   if (key) {
     if (key === "roomSize") {
       roomsModel
-        .find({ roomSize: { $lt: 40 } })
+        .find({ roomSize: { $lt: `${valueKey}` } })
         .then((data) => {
           console.log(valueKey);
           res.json({ message: "GET SUCCESS", data: data });
@@ -45,6 +45,7 @@ var createRoom = (req, res) => {
         numberCustomer: numberCustomer,
         floor: floor,
         status: 0,
+        deleted: 0,
       })
       .then((data) => {
         var id = data._id;
@@ -108,9 +109,10 @@ var deleteRoom = (req, res) => {
 };
 var updateStatus = (req, res) => {
   var { _id, newStatus } = req.body;
-  usersModel
+  roomsModel
     .findByIdAndUpdate({ _id }, { status: newStatus })
     .then((data) => {
+      console.log(data);
       res.json("UPDATE STATUS SUCCESS");
     })
     .catch((err) => {

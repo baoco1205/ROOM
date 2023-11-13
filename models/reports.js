@@ -7,13 +7,13 @@ const Schema = mongoose.Schema;
 
 const reportsSchema = new Schema(
   {
-    numberParty: String,
+    numberParty: Number,
     info: String,
-    contractsNumber: String,
-    status: String,
+    contractsNumber: Number,
     username: String,
-    date: String,
-    deleted: String,
+    date: Date,
+    dateCreate: Date,
+    deleted: Number,
   },
   { collection: "reports" }
 );

@@ -1,3 +1,4 @@
+const { Int32 } = require("mongodb");
 const mongoose = require("mongoose");
 const database = "ROOM";
 const ip = "127.0.0.1:27017";

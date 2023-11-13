@@ -10,10 +10,10 @@ const Schema = mongoose.Schema;
 const requestsSchema = new Schema(
   {
     date: Date,
-    numberCustomer: String,
-    status: String,
-    floor: String,
-    deleted: String,
+    numberCustomer: Number,
+    status: Number, //on doing off  === 0 1 2
+    floor: Number,
+    deleted: Number,
   },
   { collection: "requests" }
 );

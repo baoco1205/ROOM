@@ -14,7 +14,7 @@ var reportsRouter = require("./Router/report.js");
 var usersRouter = require("./Router/users.js");
 var roomsRouter = require("./Router/rooms.js");
 var requestsRouter = require("./Router/requests.js");
-var managerUsers = require("./Router/managerUsers.js");
+
 var routerRequest = require("./controler/requetsController.js");
 const usersModel = require("./models/users.js");
 const roomsModel = require("./models/rooms.js");
@@ -28,6 +28,8 @@ const checkRole1 = require("./controler/checkRole.js");
 const calendarLogin = require("./controler/calendarSaveLogin.js");
 const createToken = require("./controler/tokenCreate.js");
 const checkPassport = require("./controler/checkPassport.js");
+const checkAuth = require("./controler/checkAuth.js");
+
 //config cookie Parser
 var cookieParser = require("cookie-parser");
 app.use(cookieParser());
@@ -35,19 +37,10 @@ app.use(cookieParser());
 // config body parser
 var bodyParser = require("body-parser");
 const { fail } = require("assert");
+
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-
 app.use(cors());
-// CRUD user, room, report, request.
-app.use("/api/v1", usersRouter);
-app.use("/api/v1", roomsRouter);
-app.use("/api/v1", reportsRouter);
-app.use("/api/v1", requestsRouter);
-app.use("/api/v1", managerUsers);
-
-const port = 3000;
-
 //SESSION
 const KEY_SESSION = "SESSIONKEY";
 app.set("trust proxy", 1); // trust first proxy
@@ -63,11 +56,24 @@ app.use(
     store
   )
 );
+// CRUD user, room, report, request.
+app.use("/api/v1", checkPassport.checkLogin);
+app.use("/api/v1", usersRouter);
+app.use("/api/v1", roomsRouter);
+app.use("/api/v1", requestsRouter);
+app.use("/api/v1", reportsRouter);
+
+const port = 3000;
+
+//ERROR
+
 app.use((err, req, res, next) => {
   var statusCode = err.statusCode;
   var message = err.messageErr;
   res.status(statusCode).json(message);
 });
+
+//PASSPORT
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -107,91 +113,29 @@ app.get("/login", function (req, res) {
   // res.sendFile(path.join(__dirname, "/public/html", "login.html"));
   res.json("Login");
 });
+
+app.post("/logout", (req, res, next) => {
+  req.logout(function (err) {
+    if (err) {
+      return next(err);
+    }
+    res.redirect("/login");
+    // res.json({ status: 200, message: "LOGOUT SUCCESS" });
+  });
+});
 app.post(
-  "/login2",
+  "/login",
+  checkPassport.checkLogin,
+  calendarLogin.saveTimeLogin,
   (req, res, next) => {
-    var username = req.body.username;
-    var password = req.body.password;
-    usersModel
-      .findOne({ username: username, password: password })
-      .then((data) => {
-        if (data === null) {
-          res.json("Wrong password or username");
-        } else {
-          var _id = data._id;
-          var token = jwt.sign({ _id: _id }, `${keyToken}`);
-          console.log(token);
-          res.cookie("token", token, { httpOnly: true });
-          next();
-        }
-      })
-      .catch((err) => {
-        res.status(500).json("HAVE ERR HERE: " + err);
-      });
-  },
-  checkLogin.checkLogin,
-  checkRole.checkRoleUser,
-  (req, res) => {
-    res.redirect("/home");
+    res.status(200).json({ status: "200", message: "LOGIN SUCCESS" });
   }
 );
 
-app.post(
-  "/login",
-  passport.authenticate("local", {}),
-  checkRole1.checkRoleUser,
-  createToken.createToken,
-  calendarLogin.saveTimeLogin,
-  (req, res, next) => {
-    res.status(200).json({ message: "200", data: req.body.data });
-  }
-);
-app.post("/checkpassport", checkPassport.checkLogin, (req, res, next) => {
-  console.log(req.user.data._id);
-  res.json("Pass Passport");
-});
 app.post("/checkinfo", checkPassport.checkLogin, (req, res, next) => {
   res.json(req.user);
 });
-// passport.use(
-//   new localStrategy((username, password, done) => {
-//     // console.log(username, password);
-//     usersModel
-//       .findOne({ username: username, password: password })
-//       .then((data) => {
-//         if (data) {
-//           // console.log(data.username);
-//           // return done(null, { data: data, active: true });
-//           return done(null, {
-//             username: data.username,
-//             password: data.password,
-//             id: data.id,
-//             active: true,
-//           });
-//         } else {
-//           done(null, false);
-//         }
-//       })
-//       .catch((err) => {
-//         return done(err);
-//       });
-//   })
-// );
-// passport.serializeUser((user, done) => {
-//   done(null, user.id);
-// });
-// passport.deserializeUser((id, done) => {
-//   // console.log("1");
-//   usersModel
-//     .findById({ _id: id })
-//     .then((data) => {
-//       // console.log("ID LA ::::" + id);
-//       done(null, data);
-//     })
-//     .catch((err) => {
-//       done(err);
-//     });
-// });
+
 app.listen(port, () => {
   console.log("CONNECT AT : " + port);
 });

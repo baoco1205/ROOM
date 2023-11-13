@@ -21,8 +21,9 @@ var getMyInfo = (req, res, next) => {
       throw error;
     });
 };
-var getUser = (req, res) => {
-  var role = req.body.role;
+var getUser = async (req, res) => {
+  var roleString = await req.user.data.role; // ra role kieu string, khong dung duoc ===
+  var role = parseInt(roleString);
   console.log(role);
   if (role === MANAGER_ROLE) {
     var username = req.body.username;
@@ -44,17 +45,11 @@ var getUser = (req, res) => {
         // res.json(err);
       });
   }
-  if (role === MANAGER_ROLE) {
-    usersModel
-      .find({ role: { $lt: MANAGER_ROLE } })
-      .then((data) => {
-        res.json(data);
-      })
-      .catch((err) => {
-        res.json(err);
-      });
+  if (role === USER_ROLE) {
+    res.json({ message: "NOT ENOUGH ROLE" });
   }
-  if (role === ADMIN_ROLE) {
+  if (role == ADMIN_ROLE) {
+    console.log("TESTTTT" + role);
     usersModel
       .find({ role: { $lt: ADMIN_ROLE } })
       .then((data) => {
@@ -99,18 +94,12 @@ var createUser = (req, res) => {
 };
 //UPDATE INFO
 var updateUser = (req, res) => {
-  var {
-    username,
-    id,
-    userNameNew,
-    passwordNew,
-    nameNew,
-    addressNew,
-    phoneNew,
-    role,
-    note,
-  } = req.body;
-  if (role === ADMIN_ROLE) {
+  var { role, username, _id } = req.user.data;
+  var id = _id.toHexString();
+
+  var { passwordNew, nameNew, addressNew, phoneNew, noteNew, roleNew } =
+    req.body;
+  if (parseInt(role) === ADMIN_ROLE) {
     usersModel
       .updateOne(
         {
@@ -121,8 +110,8 @@ var updateUser = (req, res) => {
           name: nameNew,
           address: addressNew,
           phone: phoneNew,
-          role: role,
-          note: note,
+          role: roleNew,
+          note: noteNew,
         }
       )
       .then((data) => {
@@ -139,7 +128,7 @@ var updateUser = (req, res) => {
         error.statusCode = 401;
         throw error;
       });
-  } else if (role === MANAGER_ROLE) {
+  } else if (parseInt(role) === MANAGER_ROLE) {
     usersModel
       .updateOne(
         {
