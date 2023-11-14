@@ -25,12 +25,12 @@ var checkLogin = function (req, res, next) {
     .findOne({ username: username, password: password })
     .then((data) => {
       if (data) {
+        console.log(data);
         console.log("Pass Login");
         next();
-      } else {
+      } else if (!data) {
         res.status(400).json({ Messsage: "WRONG PASSWORD OR USERNAME" });
       }
-      ``;
     })
     .catch((err) => {
       var error = new Error("HAS ERROR AT LOGIN");

@@ -2,14 +2,16 @@
   "name": "room",
   "version": "1.0.0",
   "main": "server.js",
+  "type": "commonjs",
   "scripts": {
-    "test": "mocha ./Test",
+    "test": "jest",
     "start": "nodemon server.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@wdio/cli": "^8.20.5",
+    "bcrypt": "^5.1.1",
     "body-parser": "^1.20.2",
     "chai-http": "^4.4.0",
     "connect-redis": "^7.1.0",
@@ -31,6 +33,7 @@
     "@wdio/mocha-framework": "^8.20.3",
     "@wdio/selenium-standalone-service": "^8.15.0",
     "chai": "^4.3.10",
+    "jest": "^29.7.0",
     "mocha": "^10.2.0",
     "nodemon": "^3.0.1",
     "supertest": "^4.0.2"

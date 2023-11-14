@@ -12,7 +12,12 @@ const UsersSchema = new Schema(
     name: String,
     address: String,
     phone: String,
-    role: String,
+    role: {
+      type: String,
+      enum: ["1", "2", "3", "0"], //các giá trị có thể nhập
+      default: "user",
+      index: true,
+    },
     note: String,
     deleted: Number,
   },

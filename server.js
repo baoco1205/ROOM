@@ -16,19 +16,11 @@ var roomsRouter = require("./Router/rooms.js");
 var requestsRouter = require("./Router/requests.js");
 
 var routerRequest = require("./controler/requetsController.js");
-const usersModel = require("./models/users.js");
-const roomsModel = require("./models/rooms.js");
-const reportsModel = require("./models/reports.js");
-const requestsModel = require("./models/requests.js");
 
 //Controler
-const checkRole = require("./controler/checkRole2.js");
-const checkLogin = require("./controler/checkLogin.js");
-const checkRole1 = require("./controler/checkRole.js");
 const calendarLogin = require("./controler/calendarSaveLogin.js");
-const createToken = require("./controler/tokenCreate.js");
 const checkPassport = require("./controler/checkPassport.js");
-const checkAuth = require("./controler/checkAuth.js");
+// const checkAuth = require("./controler/checkAuth.js");
 
 //config cookie Parser
 var cookieParser = require("cookie-parser");

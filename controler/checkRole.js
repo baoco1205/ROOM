@@ -1,5 +1,3 @@
-const usersModel = require("../models/users");
-
 // var checkRole = async function (req, res, next) {
 //   var obj = req.user.data._id;
 //   var id = obj.toHexString();
@@ -67,4 +65,8 @@ var checkRoleAdmin = async function (req, res, next) {
     // res.redirect("/home");
   }
 };
-module.exports = { checkRoleUser, checkRoleAdmin, checkRoleManager };
+module.exports = {
+  checkRoleUser,
+  checkRoleAdmin,
+  checkRoleManager,
+};

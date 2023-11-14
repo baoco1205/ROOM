@@ -1,6 +1,7 @@
 const express = require("express");
 var routerUsers = express.Router();
 var checkRole = require("./checkRole");
+var brypt = require("bcrypt");
 //CONST
 const ADMIN_ROLE = 3;
 const MANAGER_ROLE = 2;
@@ -62,14 +63,17 @@ var getUser = async (req, res) => {
 };
 
 var createUser = (req, res) => {
-  console.log(req.body);
   var { userNameNew, passwordNew, name, address, phone, role, note } = req.body;
   usersModel
     .findOne({ username: userNameNew })
-    .then((data) => {
+    .then(async (data) => {
       if (data) {
         res.json("User name has been used");
       } else {
+        const salt = await brypt.genSalt(10);
+        const hashPassword = await brypt.hash(passwordNew, salt);
+        passwordNew = hashPassword;
+        // console.log(passwordNew);
         usersModel
           .create({
             username: userNameNew,
