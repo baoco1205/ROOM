@@ -4,23 +4,41 @@ const userModel = require("../models/users");
 const bcrypt = require("bcrypt");
 const { KEY_TOKEN } = require("../CONST");
 
-var checkLogin = passport.authenticate("local", {});
+var checkLogin = function (req, res, next) {
+  // if (req.user) {
+  //   return res.json("ALREADY LOGGED IN");
+  // }
+  passport.authenticate("local", function (err, user, info) {
+    if (err) {
+      return next(err);
+    }
+    if (!user) {
+      return res.json("WRONG PASSWORD OR USERNAME");
+    }
+    req.logIn(user, function (err) {
+      if (err) {
+        return next(err);
+      }
+      next();
+    });
+  })(req, res, next);
+};
 
 passport.use(
   new LocalStrategy(async function (username, password, done) {
     const user = await userModel.findOne({ username: username });
     if (!user) {
-      done(null, false);
+      return done(null, false);
     }
     if (await verifyPassword(username, password)) {
       console.log("PASS LOGIN");
 
-      done(null, user);
+      return done(null, user);
     } else {
       console.log("Not pass");
       const result = await verifyPassword(username, password);
       console.log("verifyPassword(username, password)", result);
-      done(null, false);
+      return done(null, false);
     }
     // userModel
     //   .findOne({ username: username })
