@@ -1,8 +1,8 @@
 const express = require("express");
 var routerUsers = express.Router();
-const userController = require("../controler/usersController");
-const checkRole = require("../controler/checkRole");
-const checkLogin = require("../controler/checkLogin");
+const userController = require("../controller/usersController");
+const checkRole = require("../middleware/checkRole");
+const checkLogin = require("../middleware/checkLogin");
 
 routerUsers.get("/users", checkRole.checkRoleManager, userController.getUser);
 routerUsers.post(

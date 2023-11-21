@@ -1,8 +1,8 @@
 const express = require("express");
 var routerReport = express.Router();
-const reportControl = require("../controler/reportController");
+const reportControl = require("../controller/reportController");
 
-const checkRole = require("../controler/checkRole");
+const checkRole = require("../middleware/checkRole");
 
 routerReport.get("/report", reportControl.getReport);
 routerReport.get("/report/myreport", reportControl.getMyReport);

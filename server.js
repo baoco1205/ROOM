@@ -15,11 +15,11 @@ var usersRouter = require("./Router/users.js");
 var roomsRouter = require("./Router/rooms.js");
 var requestsRouter = require("./Router/requests.js");
 
-var routerRequest = require("./controler/requetsController.js");
+var routerRequest = require("./controller/requetsController.js");
 
 //Controler
-const calendarLogin = require("./controler/calendarSaveLogin.js");
-const checkPassport = require("./controler/checkPassport.js");
+const calendarLogin = require("./controller/calendarSaveLogin.js");
+const checkPassport = require("./middleware/checkPassport.js");
 // const checkAuth = require("./controler/checkAuth.js");
 
 //config cookie Parser

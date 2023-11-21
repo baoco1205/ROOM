@@ -1,8 +1,8 @@
 const express = require("express");
 var routerRequests = express.Router();
-var requestController = require("../controler/requetsController");
-var checkRole = require("../controler/checkRole");
-var checkLogin = require("../controler/checkLogin");
+var requestController = require("../controller/requetsController");
+var checkRole = require("../middleware/checkRole");
+var checkLogin = require("../middleware/checkLogin");
 
 routerRequests.get(
   "/request",

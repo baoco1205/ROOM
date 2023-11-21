@@ -1,7 +1,7 @@
 const express = require("express");
 var routerRooms = express.Router();
-const roomControler = require("../controler/roomsController");
-const checkRole = require("../controler/checkRole");
+const roomControler = require("../controller/roomsController");
+const checkRole = require("../middleware/checkRole");
 
 routerRooms.get("/room", checkRole.checkRoleUser, roomControler.getRoom);
 routerRooms.post("/room", checkRole.checkRoleManager, roomControler.createRoom);

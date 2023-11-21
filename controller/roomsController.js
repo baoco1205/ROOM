@@ -1,6 +1,6 @@
 const roomsModel = require("../models/rooms");
 const usersModel = require("../models/users");
-const checkRole = require("./checkRole");
+const checkRole = require("../middleware/checkRole");
 const FREE = 1;
 const DOING = 0;
 var getRoom = (req, res) => {

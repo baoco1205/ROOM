@@ -1,7 +1,8 @@
 const express = require("express");
 var routerUsers = express.Router();
-var checkRole = require("./checkRole");
+var checkRole = require("../middleware/checkRole");
 var brypt = require("bcrypt");
+const Joi = require("@hapi/joi");
 //CONST
 const ADMIN_ROLE = 3;
 const MANAGER_ROLE = 2;
@@ -62,10 +63,57 @@ var getUser = async (req, res) => {
   }
 };
 
-var createUser = (req, res) => {
-  var { userNameNew, passwordNew, name, address, phone, role, note } = req.body;
+var createUser = async (req, res) => {
+  var {
+    usernameNew,
+    passwordNew,
+    name,
+    address,
+    phone,
+    role,
+    note,
+    confirmPassword,
+  } = req.body;
+  // !!!!!!!!!!!!!!!!!!!!!!!!! Check kiểu dữ liệu
+  const registerSchema = Joi.object({
+    usernameNew: Joi.string().alphanum().min(6).max(30).required(),
+    passwordNew: Joi.string()
+      .pattern(new RegExp("^[a-zA-Z0-9]{3,30}$"))
+      .required(),
+    // email: Joi.string().email().required(),
+    phone: Joi.string()
+      .length(10)
+      .pattern(/^[0-9]+$/)
+      .required(),
+    role: Joi.number().valid(1, 2, 3).default(1),
+    username: Joi.string().alphanum().min(3).max(30).required(),
+    password: Joi.string()
+      .pattern(new RegExp("^[a-zA-Z0-9]{3,30}$"))
+      .required(),
+    confirmPassword: Joi.any().valid(Joi.ref("password")).required(),
+    name: Joi.string()
+      .regex(/^[a-zA-Z\u00C0-\u017F\s]+$/)
+      .required(),
+    address: Joi.string().alphanum().min(3).max(100).optional(),
+    note: Joi.string().alphanum().max(500).optional(),
+  });
+  try {
+    const { error, value } = registerSchema.validate(req.body, {
+      allowUnknown: false,
+    });
+    if (error) {
+      return res.status(400).json({ error: error.details[0].message });
+    }
+  } catch (err) {
+    var error = new Error(err);
+    error.statusCode = 400;
+    throw error;
+  }
+
+  // !!!!!!!!!!!!!!!!!!!!!!
+
   usersModel
-    .findOne({ username: userNameNew })
+    .findOne({ username: usernameNew })
     .then(async (data) => {
       if (data) {
         res.json("User name has been used");
@@ -73,10 +121,10 @@ var createUser = (req, res) => {
         const salt = await brypt.genSalt(10);
         const hashPassword = await brypt.hash(passwordNew, salt);
         passwordNew = hashPassword;
-        // console.log(passwordNew);
+
         usersModel
           .create({
-            username: userNameNew,
+            username: usernameNew,
             password: passwordNew,
             name: name,
             address: address,
@@ -140,7 +188,7 @@ var updateUser = (req, res) => {
           role: { $lt: MANAGER_ROLE },
         },
         {
-          username: userNameNew,
+          username: usernameNew,
           password: passwordNew,
           name: name,
           address: address,
@@ -204,7 +252,7 @@ var createCustomer = (req, res) => (req, res) => {
   console.log(req.body);
   var { usernameNew, passwordNew, name, address, phone, note } = req.body;
   usersModel
-    .findOne({ username: username })
+    .findOne({ username: usernameNew })
     .then((data) => {
       if (data) {
         res.json("User name has been used");
@@ -231,6 +279,11 @@ var createCustomer = (req, res) => (req, res) => {
       throw error;
     });
 };
+
+var sortByName = (req, res, next) => {
+  var sortSchema;
+  usersModel.find({}).sort({ name: 1 });
+};
 module.exports = {
   createUser,
   createCustomer,
@@ -239,4 +292,5 @@ module.exports = {
   updateUser,
   getMyInfo,
   updateMySelf,
+  sortByName,
 };

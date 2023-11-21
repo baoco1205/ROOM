@@ -2,7 +2,7 @@ const { report } = require("../Router/report");
 const reportsModel = require("../models/reports");
 const roomsModel = require("../models/rooms");
 const usersModel = require("../models/users");
-const checkRole = require("./checkRole");
+const checkRole = require("../middleware/checkRole");
 const UNSENT = 0;
 const SENT = 1;
 

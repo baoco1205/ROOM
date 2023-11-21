@@ -46,7 +46,8 @@ var checkRoleUser = async function (req, res, next) {
 };
 
 var checkRoleManager = async function (req, res, next) {
-  var role = req.user.data.role;
+  // console.log(req.user);
+  var role = req.user.role;
   console.log(role);
   if (role >= 2) {
     console.log("Pass check role");
