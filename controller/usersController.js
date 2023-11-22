@@ -3,6 +3,7 @@ var routerUsers = express.Router();
 var checkRole = require("../middleware/checkRole");
 var brypt = require("bcrypt");
 const Joi = require("@hapi/joi");
+const verifyToken = require("../middleware/verifyToken");
 //CONST
 const ADMIN_ROLE = 3;
 const MANAGER_ROLE = 2;
@@ -11,7 +12,8 @@ const CUSTOMER_ROLE = 0;
 
 const usersModel = require("../models/users");
 var getMyInfo = (req, res, next) => {
-  var username = req.body.username;
+  var username = req.user.username;
+  console.log(username);
   usersModel
     .findOne({ username: username })
     .then((data) => {
@@ -24,7 +26,7 @@ var getMyInfo = (req, res, next) => {
     });
 };
 var getUser = async (req, res) => {
-  var roleString = await req.user.data.role; // ra role kieu string, khong dung duoc ===
+  var roleString = await req.user.user.role; // ra role kieu string, khong dung duoc ===
   var role = parseInt(roleString);
   console.log(role);
   if (role === MANAGER_ROLE) {
@@ -51,7 +53,7 @@ var getUser = async (req, res) => {
     res.json({ message: "NOT ENOUGH ROLE" });
   }
   if (role == ADMIN_ROLE) {
-    console.log("TESTTTT" + role);
+    // console.log("TESTTTT" + role);
     usersModel
       .find({ role: { $lt: ADMIN_ROLE } })
       .then((data) => {
@@ -282,7 +284,22 @@ var createCustomer = (req, res) => (req, res) => {
 
 var sortByName = (req, res, next) => {
   var sortSchema;
-  usersModel.find({}).sort({ name: 1 });
+  usersModel
+    .find({})
+    .then((data) => {
+      let name = data.name;
+      console.log(data);
+      let fullName = name.split(" ");
+      console.log(name, fullName);
+      let lastName = fullName[fullName.length - 1];
+      return lastName;
+    })
+    .sort({ name: 1 })
+    .catch((err) => {
+      const error = new Error(err);
+      error.statusCode = 401;
+      throw error;
+    });
 };
 module.exports = {
   createUser,

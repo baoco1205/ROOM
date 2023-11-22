@@ -34,22 +34,34 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(cors());
 //SESSION
-const KEY_SESSION = "SESSIONKEY";
-app.set("trust proxy", 1); // trust first proxy
+// const KEY_SESSION = "SESSIONKEY";
+// app.set("trust proxy", 1); // trust first proxy
 
-const store = session.MemoryStore();
-app.use(
-  session(
-    {
-      saveUninitialized: false,
-      secret: KEY_SESSION,
-      maxAge: 1000 * 30,
-    },
-    store
-  )
-);
+// const store = session.MemoryStore();
+// app.use(
+//   session(
+//     {
+//       saveUninitialized: false,
+//       secret: KEY_SESSION,
+//       maxAge: 1000 * 30,
+//     },
+//     store
+//   )
+// );
 // CRUD user, room, report, request.
-app.use("/api/v1", checkPassport.checkLogin);
+app.post(
+  "/login",
+  checkPassport.checkLogin,
+  calendarLogin.saveTimeLogin,
+  (req, res, next) => {
+    res.status(200).json({
+      status: "200",
+      data: req.user,
+    });
+  }
+);
+//CRUD
+// app.use("/api/v1", checkPassport.checkLogin);
 app.use("/api/v1", usersRouter);
 app.use("/api/v1", roomsRouter);
 app.use("/api/v1", requestsRouter);
@@ -67,7 +79,7 @@ app.use((err, req, res, next) => {
 
 //PASSPORT
 app.use(passport.initialize());
-app.use(passport.session());
+// app.use(passport.session());
 
 // app.use("/public", express.static(path.join(__dirname, "public")));
 app.get("/home", (req, res, next) => {
@@ -101,10 +113,6 @@ app.get("/home", (req, res, next) => {
 //     })
 //     .catch((err) => {});
 // });
-app.get("/login", function (req, res) {
-  // res.sendFile(path.join(__dirname, "/public/html", "login.html"));
-  res.json("Login");
-});
 
 app.post("/logout", (req, res, next) => {
   req.logout(function (err) {
@@ -114,18 +122,6 @@ app.post("/logout", (req, res, next) => {
     res.redirect("/login");
     // res.json({ status: 200, message: "LOGOUT SUCCESS" });
   });
-});
-app.post(
-  "/login",
-  checkPassport.checkLogin,
-  calendarLogin.saveTimeLogin,
-  (req, res, next) => {
-    res.status(200).json({ status: "200", message: "LOGIN SUCCESS" });
-  }
-);
-
-app.post("/checkinfo", checkPassport.checkLogin, (req, res, next) => {
-  res.json(req.user);
 });
 
 app.listen(port, () => {

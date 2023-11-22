@@ -1,4 +1,4 @@
-const KEY_TOKEN = "keyToken2";
+const KEY_TOKEN = { keyToken: "keyToken2" };
 const ROLE = {
   USER: 1,
   MANAGER: 2,

@@ -2,8 +2,9 @@ const express = require("express");
 var routerUsers = express.Router();
 const userController = require("../controller/usersController");
 const checkRole = require("../middleware/checkRole");
-const checkLogin = require("../middleware/checkLogin");
-
+// const checkLogin = require("../Deleted/checkLogin");
+const checkAuth = require("../middleware/verifyToken");
+routerUsers.use(checkAuth.authentication);
 routerUsers.get("/users", checkRole.checkRoleManager, userController.getUser);
 routerUsers.post(
   "/users",
@@ -14,7 +15,7 @@ routerUsers.post(
 routerUsers.post("/users/myinfo", userController.getMyInfo);
 routerUsers.post(
   "/users/updatemyself",
-  checkLogin.checkLogin,
+  // checkLogin.checkLogin,
   userController.updateMySelf
 );
 
@@ -30,5 +31,9 @@ routerUsers.delete(
   checkRole.checkRoleManager,
   userController.deleteUser
 );
-
+routerUsers.post(
+  "/sortusers",
+  checkRole.checkRoleUser,
+  userController.sortByName
+);
 module.exports = routerUsers;

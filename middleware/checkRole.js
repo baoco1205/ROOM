@@ -35,8 +35,10 @@
 //   //   });
 // };
 
+var decoded = require("../middleware/verifyToken");
 var checkRoleUser = async function (req, res, next) {
-  var role = req.user.data.role;
+  var role = req.user;
+
   if (role >= 1) {
     console.log("PASS ROLE USERS");
     next();
@@ -47,7 +49,11 @@ var checkRoleUser = async function (req, res, next) {
 
 var checkRoleManager = async function (req, res, next) {
   // console.log(req.user);
-  var role = req.user.role;
+  // var data = await decoded.decoded(req.user.token);
+  console.log(req.user);
+
+  // console.log("role:::::" + role);
+  var role = parseInt(req.user.user.role);
   console.log(role);
   if (role >= 2) {
     console.log("Pass check role");
