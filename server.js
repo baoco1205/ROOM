@@ -19,7 +19,7 @@ var routerRequest = require("./controller/requetsController.js");
 
 //Controler
 const calendarLogin = require("./controller/calendarSaveLogin.js");
-const checkPassport = require("./middleware/checkPassport.js");
+// const checkPassport = require("./middleware/checkPassport.js");
 // const checkAuth = require("./controler/checkAuth.js");
 
 //config cookie Parser
@@ -29,6 +29,7 @@ app.use(cookieParser());
 // config body parser
 var bodyParser = require("body-parser");
 const { fail } = require("assert");
+const checkLogin = require("./controller/checkLogin.js");
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -48,11 +49,17 @@ app.use(cors());
 //     store
 //   )
 // );
-// CRUD user, room, report, request.
+
+//PASSPORT
+// require("./passportConfig.js")(app);
+// require("./middleware/checkPassport.js")(passport);
+app.use(passport.initialize());
+// app.use(passport.session());
+//////
 app.post(
   "/login",
-  checkPassport.checkLogin,
-  calendarLogin.saveTimeLogin,
+  checkLogin.checkLogin,
+  // calendarLogin.saveTimeLogin,
   (req, res, next) => {
     res.status(200).json({
       status: "200",
@@ -61,7 +68,7 @@ app.post(
   }
 );
 //CRUD
-// app.use("/api/v1", checkPassport.checkLogin);
+
 app.use("/api/v1", usersRouter);
 app.use("/api/v1", roomsRouter);
 app.use("/api/v1", requestsRouter);
@@ -77,11 +84,6 @@ app.use((err, req, res, next) => {
   res.status(statusCode).json(message);
 });
 
-//PASSPORT
-app.use(passport.initialize());
-// app.use(passport.session());
-
-// app.use("/public", express.static(path.join(__dirname, "public")));
 app.get("/home", (req, res, next) => {
   res.json("HOME PAGE");
 });
@@ -119,7 +121,7 @@ app.post("/logout", (req, res, next) => {
     if (err) {
       return next(err);
     }
-    res.redirect("/login");
+    // res.redirect("/login");
     // res.json({ status: 200, message: "LOGOUT SUCCESS" });
   });
 });

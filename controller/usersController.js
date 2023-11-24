@@ -1,16 +1,19 @@
-const express = require("express");
-var routerUsers = express.Router();
-var checkRole = require("../middleware/checkRole");
+// const express = require("express");
+// var routerUsers = express.Router();
+// var checkRole = require("../middleware/checkRole");
 var brypt = require("bcrypt");
 const Joi = require("@hapi/joi");
-const verifyToken = require("../middleware/verifyToken");
+// const verifyToken = require("../middleware/verifyToken");
+const checkAuth = require("../middleware/checkPassport");
 //CONST
 const ADMIN_ROLE = 3;
 const MANAGER_ROLE = 2;
 const USER_ROLE = 1;
 const CUSTOMER_ROLE = 0;
-
 const usersModel = require("../models/users");
+//middware
+// routerUsers.use(checkAuth.checkAuth);
+//
 var getMyInfo = (req, res, next) => {
   var username = req.user.username;
   console.log(username);

@@ -1,6 +1,8 @@
 var jwt = require("jsonwebtoken");
-const keyToken = "matkhautokenoday";
+const { KEY_TOKEN } = require("../CONST");
 const usersModel = require("../models/users");
+const bcrypt = require("bcrypt");
+
 var checkLoginToken = function (req, res, next) {
   // var token = req.body.token;
   var cookie = req.cookies;
@@ -21,16 +23,28 @@ var checkLoginToken = function (req, res, next) {
 var checkLogin = function (req, res, next) {
   var username = req.body.username;
   var password = req.body.password;
+
   usersModel
-    .findOne({ username: username, password: password })
+    .findOne({ username: username })
     .then((data) => {
-      if (data) {
-        console.log(data);
-        console.log("Pass Login");
-        next();
-      } else if (!data) {
-        res.status(400).json({ Messsage: "WRONG PASSWORD OR USERNAME" });
+      if (!data) {
+        res.json("WRONG PASSWORD OR USERNAME");
       }
+      bcrypt.compare(password, data.password, function (err, result) {
+        if (err) {
+          res.json("WRONG PASSWORD OR USERNAME");
+        }
+        if (!result) {
+          res.json("TOKEN NOT VALID");
+        }
+        var id = data._id.toString();
+        let token = jwt.sign(id, KEY_TOKEN.keyToken);
+        // console.log(token);
+        const { password, ...other } = data._doc;
+        req.user = { data: { ...other }, token: token };
+
+        next();
+      });
     })
     .catch((err) => {
       var error = new Error("HAS ERROR AT LOGIN");
@@ -39,4 +53,4 @@ var checkLogin = function (req, res, next) {
     });
 };
 
-module.exports = { checkLogin, checkLoginToken };
+module.exports = { checkLogin };

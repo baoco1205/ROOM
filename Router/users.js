@@ -3,8 +3,13 @@ var routerUsers = express.Router();
 const userController = require("../controller/usersController");
 const checkRole = require("../middleware/checkRole");
 // const checkLogin = require("../Deleted/checkLogin");
-const checkAuth = require("../middleware/verifyToken");
-routerUsers.use(checkAuth.authentication);
+const checkAuth = require("../middleware/checkPassport");
+const passport = require("passport");
+
+//middleware
+routerUsers.use(checkAuth.checkAuth);
+// routerUsers.use(passport.authenticate("jwt", { session: false }));
+
 routerUsers.get("/users", checkRole.checkRoleManager, userController.getUser);
 routerUsers.post(
   "/users",
