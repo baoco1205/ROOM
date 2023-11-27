@@ -35,10 +35,12 @@ var checkLogin = function (req, res, next) {
           res.json("WRONG PASSWORD OR USERNAME");
         }
         if (!result) {
-          res.json("TOKEN NOT VALID");
+          res.json("WRONG PASSWORD OR USERNAME");
         }
         var id = data._id.toString();
-        let token = jwt.sign(id, KEY_TOKEN.keyToken);
+        let token = jwt.sign({ id }, KEY_TOKEN.keyToken, {
+          expiresIn: "12h",
+        });
         // console.log(token);
         const { password, ...other } = data._doc;
         req.user = { data: { ...other }, token: token };
@@ -47,7 +49,7 @@ var checkLogin = function (req, res, next) {
       });
     })
     .catch((err) => {
-      var error = new Error("HAS ERROR AT LOGIN");
+      var error = new Error("HAS ERROR AT LOGIN: " + err);
       error.statusCode = 500;
       throw error;
     });

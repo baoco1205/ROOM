@@ -5,8 +5,26 @@ mongoose.connect(`mongodb://${ip}/${database}`).then(() => {});
 
 const Schema = mongoose.Schema;
 
+var today = new Date();
+var datetimeVN = today.toLocaleString("vi-VN");
+
 const calendarSchema = new Schema(
-  { timeLogin: String, timeLogout: String, username: String, token: String },
+  {
+    timeLogin: {
+      type: String,
+      // enum: [ROLE.USER, ROLE.MANAGER, ROLE.ADMIN], //các giá trị có thể nhập
+      default: datetimeVN,
+      index: true,
+    },
+    timeLogout: String,
+    username: {
+      type: String,
+      // enum: [ROLE.USER, ROLE.MANAGER, ROLE.ADMIN], //các giá trị có thể nhập
+      // default: datetimeVN,
+      index: true,
+    },
+    token: String,
+  },
   { collection: "calendarLogin" }
 );
 const calendarLoginModel = mongoose.model("calendarLogin", calendarSchema);

@@ -11,11 +11,12 @@ const UsersSchema = new Schema(
   {
     username: String,
     password: String,
+    confirmPassword: String,
     name: String,
     address: String,
     phone: String,
     role: {
-      type: String,
+      type: Number,
       enum: [ROLE.USER, ROLE.MANAGER, ROLE.ADMIN], //các giá trị có thể nhập
       default: "1",
       index: true,

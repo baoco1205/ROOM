@@ -1,18 +1,39 @@
 const { Int32 } = require("mongodb");
 const mongoose = require("mongoose");
 const database = "ROOM";
+
 const ip = "127.0.0.1:27017";
-const { DELETE, ROLE } = require("../CONST");
+const { DELETE, ROLE, ROOM } = require("../CONST");
 mongoose.connect(`mongodb://${ip}/${database}`).then(() => {});
 
 const Schema = mongoose.Schema;
 
 const roomsSchema = new Schema(
   {
-    roomSize: Number,
-    numberCustomer: Number,
-    floor: Number,
-    status: Number,
+    roomSize: {
+      type: Number,
+      // enum: [],
+      default: 0,
+      index: true,
+    },
+    numberCustomer: {
+      type: Number,
+      // enum: [],
+      default: 0,
+      index: true,
+    },
+    floor: {
+      type: Number,
+      enum: [1, 2, 3, 4, 5],
+      default: 0,
+      index: true,
+    },
+    status: {
+      type: Number,
+      enum: [ROOM.OPEN, ROOM.CLOSE],
+      default: ROOM.OPEN,
+      index: true,
+    },
     deleted: {
       type: Number,
       enum: [DELETE.UNDELETED, DELETE.DELETED],

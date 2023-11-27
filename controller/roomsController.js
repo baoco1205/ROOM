@@ -1,32 +1,49 @@
 const roomsModel = require("../models/rooms");
+const Joi = require("@hapi/joi");
 const usersModel = require("../models/users");
 const checkRole = require("../middleware/checkRole");
 const FREE = 1;
 const DOING = 0;
 var getRoom = (req, res) => {
-  var { status, key, valueKey } = req.body;
-
-  if (key) {
-    if (key === "roomSize") {
-      roomsModel
-        .find({ roomSize: { $lt: `${valueKey}` } })
-        .then((data) => {
-          console.log(valueKey);
-          res.json({ message: "GET SUCCESS", data: data });
-        })
-        .catch((err) => {
-          const error = new Error(
-            "GET VALUE BY ROOM SIZE FAILS BECAUSE: " + err
-          );
-          error.statusCode(400);
-          throw error;
-        });
-    }
+  var { status, roomSize } = req.body;
+  if ((status, roomSize)) {
+    roomsModel
+      .find({ status: status, roomSize: { $lt: `${roomSize}` } })
+      .then((data) => {
+        return res.json({ message: "Get success", data: data });
+      })
+      .catch((err) => {
+        let error = new Error(err);
+        error.statusCode = 403;
+        throw error;
+      });
+  } else if (status) {
+    roomsModel
+      .find({ status: status })
+      .then((data) => {
+        return res.json({ message: "Get success status", data: data });
+      })
+      .catch((err) => {
+        let error = new Error(err);
+        error.statusCode = 403;
+        throw error;
+      });
+  } else if (roomSize) {
+    roomsModel
+      .find({ roomSize: roomSize })
+      .then((data) => {
+        return res.json({ message: "Get success roomsize", data: data });
+      })
+      .catch((err) => {
+        let error = new Error(err);
+        error.statusCode = 403;
+        throw error;
+      });
   } else {
     roomsModel
       .find()
       .then((data) => {
-        res.json({ Message: "GET ROOM SUCCESS", data: data });
+        res.json({ Message: "GET ALL ROOM SUCCESS", data: data });
       })
       .catch((err) => {
         var error = new Error();
@@ -37,59 +54,88 @@ var getRoom = (req, res) => {
 };
 var createRoom = (req, res) => {
   var { roomSize, numberCustomer, floor } = req.body;
+
   //status có 2 dạng free =0 or doing =1
-  if (roomSize && numberCustomer && floor) {
-    roomsModel
-      .create({
-        roomSize: roomSize,
-        numberCustomer: numberCustomer,
-        floor: floor,
-        status: 0,
-        deleted: 0,
-      })
-      .then((data) => {
-        var id = data._id;
-        res.json({ message: "Create room complete!!", id: id });
-      })
-      .catch((err) => res.status(500).json("Create fails, have error: " + err));
-  } else {
-    res.status(400).json({ message: "NOT ENOUG INFORMATION" });
+  var roomSchema = Joi.object({
+    roomSize: Joi.number().max(30).required(),
+    numberCustomer: Joi.number().required(),
+    floor: Joi.number().min(1).max(50).required(),
+  });
+  try {
+    const { error } = roomSchema.validate(req.body, { allowUnknown: false });
+    if (error) {
+      // Nếu có lỗi, trả về mã lỗi 400 và thông báo lỗi
+      return res.status(400).json({ message: error.message });
+    }
+  } catch (err) {
+    var error = new Error(err);
+    error.statusCode = 400;
+    throw error;
   }
+
+  roomsModel
+    .create({
+      roomSize: roomSize,
+      numberCustomer: numberCustomer,
+      floor: floor,
+      status: 0,
+      deleted: 0,
+    })
+    .then((data) => {
+      var id = data._id;
+      res.json({ message: "Create room complete!!", id: id });
+    })
+    .catch((err) => res.status(500).json("Create fails, have error: " + err));
 };
 
 var updateRoom = (req, res) => {
-  var id = req.body._id;
-  console.log(id);
-  // var objectId = mongoose.Types.ObjectId(id);
-  var { roomSizeNew, numberCustomerNew, floorNew, statusNew } = req.body;
-  if (roomSizeNew && numberCustomerNew && floorNew && statusNew) {
-    roomsModel
-      .findByIdAndUpdate(
-        id,
-        {
-          roomSize: roomSizeNew,
-          numberCustomer: numberCustomerNew,
-          floor: floorNew,
-          status: statusNew,
-        },
-        { new: false }
-      )
-      .then((data) => {
-        if (data) {
-          res.json({ message: "UPDATE SUCCESS", data: data });
-        } else {
-          console.log(data);
-          res.status(400).json("UPDATE FAILS");
-        }
-      })
-      .catch((err) => {
-        var error = new Error(err);
-        error.statusCode = 400;
-        throw error;
-      });
-  } else {
-    res.status(400).json({ message: "UPDATE FAILS BECAUSE MISS INFO" });
+  ////////
+
+  var roomSchema = Joi.object({
+    roomSize: Joi.number().max(30).required(),
+    numberCustomer: Joi.number().required(),
+    floor: Joi.number().min(1).max(50).required(),
+    status: Joi.number().min(0).max(1).required(),
+    id: Joi.string().required(),
+  });
+  try {
+    const { error } = roomSchema.validate(req.body, { allowUnknown: false });
+    if (error) {
+      // Nếu có lỗi, trả về mã lỗi 400 và thông báo lỗi
+      return res.status(400).json({ message: error.message });
+    }
+  } catch (err) {
+    var error = new Error(err);
+    error.statusCode = 400;
+    throw error;
   }
+
+  ////////
+  var { roomSize, numberCustomer, floor, status, id } = req.body;
+  roomsModel
+    .findByIdAndUpdate(
+      id,
+      {
+        roomSize: roomSize,
+        numberCustomer: numberCustomer,
+        floor: floor,
+        status: status,
+      },
+      { new: false }
+    )
+    .then((data) => {
+      if (data) {
+        res.json({ message: "UPDATE SUCCESS", data: data });
+      } else {
+        console.log(data);
+        res.status(400).json("UPDATE FAILS");
+      }
+    })
+    .catch((err) => {
+      var error = new Error(err);
+      error.statusCode = 400;
+      throw error;
+    });
 };
 var deleteRoom = (req, res) => {
   var id = req.body._id;
@@ -108,12 +154,33 @@ var deleteRoom = (req, res) => {
     });
 };
 var updateStatus = (req, res) => {
-  var { _id, newStatus } = req.body;
+  var { id, status } = req.body;
+
+  //////
+
+  var updateRoomSchema = Joi.object({
+    status: Joi.number().min(0).max(1).required(),
+    id: Joi.string().required(),
+  });
+  try {
+    const { error } = updateRoomSchema.validate(req.body, {
+      allowUnknown: false,
+    });
+    if (error) {
+      // Nếu có lỗi, trả về mã lỗi 400 và thông báo lỗi
+      return res.status(400).json({ message: error.message });
+    }
+  } catch (err) {
+    var error = new Error(err);
+    error.statusCode = 400;
+    throw error;
+  }
+  //////
   roomsModel
-    .findByIdAndUpdate({ _id }, { status: newStatus })
+    .findByIdAndUpdate({ _id: id }, { status: status })
     .then((data) => {
       console.log(data);
-      res.json("UPDATE STATUS SUCCESS");
+      res.json({ message: "UPDATE STATUS SUCCESS", data: data });
     })
     .catch((err) => {
       var error = new Error(err);

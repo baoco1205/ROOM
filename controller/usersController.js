@@ -11,12 +11,15 @@ const MANAGER_ROLE = 2;
 const USER_ROLE = 1;
 const CUSTOMER_ROLE = 0;
 const usersModel = require("../models/users");
+const without = require("../controller/without");
 //middware
 // routerUsers.use(checkAuth.checkAuth);
 //
 var getMyInfo = (req, res, next) => {
   var username = req.user.username;
-  console.log(username);
+  // console.log("usernameeeeeeeeeeeee1 " + req.user);
+  // console.log("usernameeeeeeeeeeeee " + username);
+  // console.log(username);
   usersModel
     .findOne({ username: username })
     .then((data) => {
@@ -69,20 +72,11 @@ var getUser = async (req, res) => {
 };
 
 var createUser = async (req, res) => {
-  var {
-    usernameNew,
-    passwordNew,
-    name,
-    address,
-    phone,
-    role,
-    note,
-    confirmPassword,
-  } = req.body;
+  var { username, password, name, address, phone, role, note } = req.body;
   // !!!!!!!!!!!!!!!!!!!!!!!!! Check kiểu dữ liệu
   const registerSchema = Joi.object({
-    usernameNew: Joi.string().alphanum().min(6).max(30).required(),
-    passwordNew: Joi.string()
+    username: Joi.string().alphanum().min(6).max(30).required(),
+    password: Joi.string()
       .pattern(new RegExp("^[a-zA-Z0-9]{3,30}$"))
       .required(),
     // email: Joi.string().email().required(),
@@ -91,11 +85,6 @@ var createUser = async (req, res) => {
       .pattern(/^[0-9]+$/)
       .required(),
     role: Joi.number().valid(1, 2, 3).default(1),
-    username: Joi.string().alphanum().min(3).max(30).required(),
-    password: Joi.string()
-      .pattern(new RegExp("^[a-zA-Z0-9]{3,30}$"))
-      .required(),
-    confirmPassword: Joi.any().valid(Joi.ref("password")).required(),
     name: Joi.string()
       .regex(/^[a-zA-Z\u00C0-\u017F\s]+$/)
       .required(),
@@ -118,26 +107,31 @@ var createUser = async (req, res) => {
   // !!!!!!!!!!!!!!!!!!!!!!
 
   usersModel
-    .findOne({ username: usernameNew })
+    .findOne({ username: username })
     .then(async (data) => {
       if (data) {
         res.json("User name has been used");
       } else {
-        const salt = await brypt.genSalt(10);
-        const hashPassword = await brypt.hash(passwordNew, salt);
-        passwordNew = hashPassword;
+        let salt = await brypt.genSalt(10);
+        let hashPassword = await brypt.hash(password, salt);
+        password = hashPassword;
 
         usersModel
           .create({
-            username: usernameNew,
-            password: passwordNew,
+            username: username,
+            password: password,
             name: name,
             address: address,
             phone: phone,
             role: role,
             note: note,
           })
-          .then((data) => res.json("Create user complete!!"))
+          .then((data) => {
+            const user = without.withoutPassword(data);
+            console.log(data);
+
+            res.json({ message: "Create success", data: user });
+          })
           .catch((err) => {
             var error = new Error("CREATE FAILS!!!: " + err);
             error.statusCode = 500;
@@ -150,31 +144,69 @@ var createUser = async (req, res) => {
     });
 };
 //UPDATE INFO
-var updateUser = (req, res) => {
-  var { role, username, _id } = req.user.data;
-  var id = _id.toHexString();
+var updateUser = async (req, res) => {
+  var { role, username } = req.user;
+  let { password, name, address, phone, note, id } = req.body;
 
-  var { passwordNew, nameNew, addressNew, phoneNew, noteNew, roleNew } =
-    req.body;
-  if (parseInt(role) === ADMIN_ROLE) {
+  /////////////////////////
+  const updateSchema = Joi.object({
+    password: Joi.string()
+      .pattern(new RegExp("^[a-zA-Z0-9]{3,30}$"))
+      .required(),
+    // email: Joi.string().email().required(),
+    phone: Joi.string()
+      .length(10)
+      .pattern(/^[0-9]+$/)
+      .required(),
+    role: Joi.number().valid(1, 2).default(1),
+    name: Joi.string()
+      .regex(/^[a-zA-Z\u00C0-\u017F\s]+$/)
+      .required(),
+    address: Joi.string().alphanum().min(3).max(100).optional(),
+    note: Joi.string().alphanum().max(500).optional(),
+    id: Joi.string().alphanum().max(500).required(),
+  });
+  try {
+    const { error, value } = updateSchema.validate(req.body, {
+      allowUnknown: false,
+    });
+    if (error) {
+      return res.status(400).json({ error: error.details[0].message });
+    }
+  } catch (err) {
+    var error = new Error(err);
+    error.statusCode = 400;
+    throw error;
+  }
+  //////////////////
+  // var id = _id.toHexString();
+  console.log(role);
+  var salt = await brypt.genSalt(10);
+  var hashPassword = await brypt.hash(password, salt);
+  password = hashPassword;
+  if (role >= ADMIN_ROLE) {
     usersModel
-      .updateOne(
+      .findByIdAndUpdate(
         {
           _id: id,
         },
         {
-          password: passwordNew,
-          name: nameNew,
-          address: addressNew,
-          phone: phoneNew,
-          role: roleNew,
-          note: noteNew,
-        }
+          password: password,
+          name: name,
+          address: address,
+          phone: phone,
+          role: role,
+          note: note,
+        },
+        { new: true }
       )
       .then((data) => {
-        if (data.acknowledged === true) {
-          console.log("data");
-          res.json("update success");
+        if (data) {
+          console.log(data);
+          res.json({
+            message: "update success",
+            data: without.withoutPassword(data),
+          });
         } else if ((data = null)) {
           console.log(data);
           res.json("update FAILS");
@@ -185,70 +217,98 @@ var updateUser = (req, res) => {
         error.statusCode = 401;
         throw error;
       });
-  } else if (parseInt(role) === MANAGER_ROLE) {
+  } else if (role >= MANAGER_ROLE) {
     usersModel
-      .updateOne(
-        {
-          username: username,
-          role: { $lt: MANAGER_ROLE },
-        },
-        {
-          username: usernameNew,
-          password: passwordNew,
-          name: name,
-          address: address,
-          phone: phone,
-          role: role,
-          note: note,
-        }
-      )
-      .then((data) => {
-        console.log("data", data);
-        if (data.acknowledged === true) {
-          console.log(data);
-          res.json("update success");
-        } else {
-          console.log(data);
-          res.json("update FAILS");
-        }
-      })
+      .findByIdAndUpdate({ _id: id })
+      .then((data) => {})
       .catch((err) => {
-        var error = new Error("UPDATE FAILS");
-        err.statusCode = 401;
+        let error = new Error(err);
+        error.statusCode = 403;
         throw error;
       });
-  } else if (req.body.role <= 1) {
+  } else if (role <= 1) {
     res.json("YOUR ROLE NOT ENOUGH");
   }
 };
 // );
-var updateMySelf = (req, res) => {
-  var { id, passwordNew, noteNew, nameNew, addressNew, phoneNew } = req.body;
+var updateMySelf = async (req, res) => {
+  let id = req.user.id;
+
+  var { password, note, name, address, phone } = req.body;
+  /////////////////
+
+  const updateSchema = Joi.object({
+    password: Joi.string()
+      .pattern(new RegExp("^[a-zA-Z0-9]{3,30}$"))
+      .required(),
+    // email: Joi.string().email().required(),
+    phone: Joi.string()
+      .length(10)
+      .pattern(/^[0-9]+$/)
+      .required(),
+    role: Joi.number().valid(1, 2).default(1),
+    name: Joi.string()
+      .regex(/^[a-zA-Z\u00C0-\u017F\s]+$/)
+      .required(),
+    address: Joi.string().alphanum().min(3).max(100).optional(),
+    note: Joi.string().alphanum().max(500).optional(),
+  });
+  try {
+    const { error, value } = updateSchema.validate(req.body, {
+      allowUnknown: false,
+    });
+    if (error) {
+      return res.status(400).json({ error: error.details[0].message });
+    }
+  } catch (err) {
+    var error = new Error(err);
+    error.statusCode = 400;
+    throw error;
+  }
+
+  /////////////////
+
+  let salt = await brypt.genSalt(10);
+  let hashPassword = await brypt.hash(password, salt);
+  password = hashPassword;
+
   usersModel
-    .findById(
+    .findByIdAndUpdate(
       { _id: id },
       {
         $set: {
-          password: passwordNew,
-          note: noteNew,
-          name: nameNew,
-          address: addressNew,
-          phone: phoneNew,
+          password: password,
+          note: note,
+          name: name,
+          address: address,
+          phone: phone,
         },
       }
     )
-    .then()
-    .catch();
-};
-var deleteUser = (req, res) => {
-  var username = req.body.usernameDelete;
-  usersModel
-    .deleteOne({ username: username })
-    .then(() => {
-      res.json("DELETE SUCCESS");
+    .then((data) => {
+      if (data) {
+        res.json({ message: "Update success", data: data });
+      }
     })
     .catch((err) => {
-      var error = new Error("DELETE USER FAILS");
+      let error = new Error(err);
+      error.statusCode = 400;
+      throw error;
+    });
+};
+var deleteUser = (req, res) => {
+  var { username } = req.body;
+  usersModel
+    .deleteOne({ username: username })
+    .then((data) => {
+      console.log(data);
+      if (data.deletedCount === 0) {
+        return res.json({ message: "DON'T HAVE ID TO DELETE" });
+      }
+      return res.json({ message: "DELETE SUCCESS" });
+    })
+    .catch((err) => {
+      var error = new Error("DELETE USER FAILS :" + err);
       error.statusCode = 500;
       throw error;
     });

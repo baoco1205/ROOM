@@ -8,4 +8,8 @@ const DELETE = {
   UNDELETED: 0,
   DELETED: 1,
 };
-module.exports = { KEY_TOKEN, ROLE, DELETE };
+const ROOM = {
+  OPEN: 0,
+  CLOSE: 1,
+};
+module.exports = { KEY_TOKEN, ROLE, DELETE, ROOM };

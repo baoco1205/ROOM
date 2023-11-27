@@ -167,6 +167,7 @@ var checkAuth = function (req, res, next) {
     if (user) {
       console.log("Pass check auth");
       req.user = user;
+      // console.log("qjhwekjqwhejqhwkejqwe: " + user);
       next();
     }
   })(req, res, next);
@@ -181,12 +182,14 @@ passport.use(
   "jwt",
   new JwtStrategy(opts, async function (jwt_payload, done) {
     try {
-      console.log("jwt_payload", jwt_payload);
-      console.log("XXXXXXXXXXXX");
-      const login = await userModel.findOne({ id: jwt_payload.sub });
-
+      // console.log("jwt_payload", jwt_payload);
+      // console.log("sub+++++" + jwt_payload.id);
+      // console.log("XXXXXXXXXXXX");
+      const login = await userModel.findById(jwt_payload.id);
       if (login) return done(null, login);
-    } catch (error) {}
+    } catch (error) {
+      res.json("ERR HERE");
+    }
   })
 );
 // };

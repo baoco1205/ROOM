@@ -57,12 +57,11 @@ app.use(passport.initialize());
 // app.use(passport.session());
 //////
 app.post(
-  "/login",
+  "/api/login",
   checkLogin.checkLogin,
   // calendarLogin.saveTimeLogin,
   (req, res, next) => {
     res.status(200).json({
-      status: "200",
       data: req.user,
     });
   }
