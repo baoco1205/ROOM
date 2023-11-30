@@ -12,4 +12,10 @@ const ROOM = {
   OPEN: 0,
   CLOSE: 1,
 };
-module.exports = { KEY_TOKEN, ROLE, DELETE, ROOM };
+const REQUEST = {
+  OFF: 0,
+  ON: 1,
+  DOING: 2,
+};
+const SESSION = { MORNING: 0, EVENING: 1 };
+module.exports = { KEY_TOKEN, ROLE, DELETE, ROOM, REQUEST, SESSION };

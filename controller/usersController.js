@@ -32,7 +32,7 @@ var getMyInfo = (req, res, next) => {
     });
 };
 var getUser = async (req, res) => {
-  var roleString = await req.user.user.role; // ra role kieu string, khong dung duoc ===
+  var roleString = await req.user.role; // ra role kieu string, khong dung duoc ===
   var role = parseInt(roleString);
   console.log(role);
   if (role === MANAGER_ROLE) {

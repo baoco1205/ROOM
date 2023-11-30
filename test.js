@@ -1,4 +1,19 @@
-const jwt = require("jsonwebtoken");
-const token = "$2b$10$QiXJkF07x.q3GDYebejb9OdkzwdJnHNK5YxcEYuK.ri8zc/XxtPxy";
-const decod = jwt.verify(token, "keyToken2");
-console.log(decod);
+// var dieuKienLoc = req.body;
+// const queryConditions = {};
+// Object.keys(dieuKienLoc).forEach((key) => {
+//   queryConditions[key] = dieuKienLoc[key];
+// });
+// requestModel
+//   .find(queryConditions)
+//   .then((data) => {
+//     res.json({ data: data });
+//   })
+//   .catch((err) => {
+//     var error = new Error(err);
+//     error.statusCode = 400;
+//     throw error;
+//   });
+let now = new Date();
+
+console.log(now.toISOString());
+console.log(now);

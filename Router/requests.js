@@ -1,8 +1,14 @@
+///NPM
+
 const express = require("express");
 var routerRequests = express.Router();
 var requestController = require("../controller/requetsController");
 var checkRole = require("../middleware/checkRole");
-var checkLogin = require("../controller/checkLogin");
+// var checkLogin = require("../controller/checkLogin");
+const checkAuth = require("../middleware/checkPassport");
+
+//middware
+routerRequests.use(checkAuth.checkAuth);
 
 routerRequests.get(
   "/request",
@@ -10,14 +16,24 @@ routerRequests.get(
   requestController.getRequest
 );
 routerRequests.post(
+  "/request/cancelRequest",
+  checkRole.checkRoleUser,
+  requestController.cancelRequest
+);
+routerRequests.post(
+  "/request/checkrequest",
+  checkRole.checkRoleUser,
+  requestController.findRequest
+);
+routerRequests.post(
   "/request",
   checkRole.checkRoleUser,
   requestController.createRequest
 );
-routerRequests.put(
-  "/request",
+routerRequests.post(
+  "/request/updaterequest",
   checkRole.checkRoleUser,
-  requestController.changeDateRequestAndUpdate
+  requestController.updateRequest
 );
 routerRequests.delete(
   "/request",

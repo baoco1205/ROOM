@@ -7,7 +7,7 @@ const checkAuth = require("../middleware/checkPassport");
 const passport = require("passport");
 
 //middleware
-routerUsers.use(checkAuth.checkAuth);
+routerUsers.use("/users", checkAuth.checkAuth);
 // routerUsers.use(passport.authenticate("jwt", { session: false }));
 
 routerUsers.get("/users", checkRole.checkRoleManager, userController.getUser);

@@ -3,11 +3,11 @@ var calendarLogin = require("../models/calendarLogin");
 var saveTimeLogin = function (req, res, next) {
   // console.log("req.user", req.user);
   var username = req.body.username;
-  var token = req.data.token;
+  var token = req.user.token;
   // console.log("TESTTTOKEN::::" + token);
   var today = new Date();
   var datetimeVN = today.toLocaleString("vi-VN");
-  var date = datetimeVN.split(" ")[1];
+  // var date = datetimeVN.split(" ")[1];
   calendarLogin
     .create({ timeLogin: datetimeVN, username: username, token: token })
     .then((data) => {
@@ -19,8 +19,8 @@ var saveTimeLogin = function (req, res, next) {
     });
 };
 var saveTimeLogout = function (req, res, next) {
-  var username = req.body.username;
-  var id = req.body.id;
+  var username = req.user.data.username;
+  var token = req.user.token;
   var today = new Date();
   var datetimeVN = today.toLocaleString("vi-VN");
   calendarLogin

@@ -8,7 +8,7 @@ const path = require("path");
 const passport = require("passport");
 const localStrategy = require("passport-local").Strategy;
 const session = require("express-session");
-const keyToken = "matkhautokenoday";
+const { KEY_TOKEN } = require("./CONST.js");
 //ROUTER
 var reportsRouter = require("./Router/report.js");
 var usersRouter = require("./Router/users.js");
@@ -59,7 +59,7 @@ app.use(passport.initialize());
 app.post(
   "/api/login",
   checkLogin.checkLogin,
-  // calendarLogin.saveTimeLogin,
+  calendarLogin.saveTimeLogin,
   (req, res, next) => {
     res.status(200).json({
       data: req.user,
