@@ -2,7 +2,7 @@ const express = require("express");
 const Joi = require("@hapi/joi").extend(require("@hapi/joi-date"));
 const mongoose = require("mongoose");
 const requestModel = require("../models/requests");
-const { STATUS, REQUEST, SESSION } = require("../CONST");
+const { STATUS, CHECKSCHEMA, REQUEST, SESSION } = require("../CONST");
 
 const { request } = require("chai");
 
@@ -130,22 +130,14 @@ var findRequest = async (req, res, next) => {
       throw error;
     });
 };
-const createSchema = Joi.object({
-  date: Joi.date().format("YYYY-MM-DD").required(),
-  session: Joi.number().valid(0, 1).required(),
-  numberCustomer: Joi.number().required(),
-  // status: Joi.number().required(),
-  floor: Joi.number().valid(1, 2, 3, 4, 5).required(),
-});
 let createRequest = (req, res, next) => {
   var { date, numberCustomer, status, floor, session } = req.body;
   // date = date.split("T")[0];
   console.log(date);
 
-  createSchema
-    .validateAsync(req.body, {
-      allowUnknown: false,
-    })
+  CHECKSCHEMA.CREATESCHEMA.validateAsync(req.body, {
+    allowUnknown: false,
+  })
     .then((payload) => {
       let now = new Date();
       let checkDate = new Date(date);
@@ -196,18 +188,11 @@ var deleteRequest = (req, res, next) => {
       throw error;
     });
 };
-const updateSchema = Joi.object({
-  date: Joi.date().format("YYYY-MM-DD").required(),
-  session: Joi.number().valid(SESSION.MORNING, SESSION.EVENING).required(),
-  floor: Joi.number().valid(1, 2, 3, 4, 5).required(),
-  _id: Joi.string().required(),
-});
 
 let updateRequest = (req, res, next) => {
-  updateSchema
-    .validateAsync(req.body, {
-      allowUnknown: false,
-    })
+  CHECKSCHEMA.UPDATESCHEMA.validateAsync(req.body, {
+    allowUnknown: false,
+  })
     .then((payload) => {
       req.body = payload;
       let { date, session, floor, _id } = req.body;
@@ -254,22 +239,14 @@ let updateRequest = (req, res, next) => {
     });
 };
 
-const cancelSchema = Joi.object({
-  date: Joi.date().format("YYYY-MM-DD").required(),
-  session: Joi.number().valid(0, 1).required(),
-  // status: Joi.number().required(),
-  floor: Joi.number().valid(1, 2, 3, 4, 5).required(),
-  status: Joi.number().valid(0, 1, 2),
-});
 var cancelRequest = (req, res, next) => {
   var { date, session, floor } = req.body;
 
   //////////
 
-  cancelSchema
-    .validateAsync(req.body, {
-      allowUnknown: false,
-    })
+  CHECKSCHEMA.CANCELSCHEMA.validateAsync(req.body, {
+    allowUnknown: false,
+  })
     .then((payload) => {
       requestModel
         .findOne({ date: date, session: session, floor: floor })
