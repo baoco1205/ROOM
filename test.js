@@ -13,7 +13,6 @@
 //     error.statusCode = 400;
 //     throw error;
 //   });
-let now = new Date();
-
-console.log(now.toISOString());
-console.log(now);
+require("dotenv").config();
+let test = process.env.port;
+console.log(test);

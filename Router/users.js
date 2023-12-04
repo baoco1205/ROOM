@@ -37,6 +37,11 @@ routerUsers.delete(
   userController.deleteUser
 );
 routerUsers.post(
+  "/users/softdelete",
+  checkRole.checkRoleManager,
+  userController.softDelete
+);
+routerUsers.post(
   "/sortusers",
   checkRole.checkRoleUser,
   userController.sortByName

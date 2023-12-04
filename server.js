@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-
+require("dotenv").config();
 //NPM
 var cors = require("cors");
 var jwt = require("jsonwebtoken");
@@ -33,7 +33,7 @@ const checkLogin = require("./controller/checkLogin.js");
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-app.use(cors());
+app.use(cors({ origin: process.env.URL_CLIENT }));
 //SESSION
 // const KEY_SESSION = "SESSIONKEY";
 // app.set("trust proxy", 1); // trust first proxy
@@ -73,7 +73,7 @@ app.use("/api/v1", roomsRouter);
 app.use("/api/v1", requestsRouter);
 app.use("/api/v1", reportsRouter);
 
-const port = 3000;
+const PORT = process.env.port;
 
 //ERROR
 
@@ -125,7 +125,7 @@ app.post("/logout", (req, res, next) => {
   });
 });
 
-app.listen(port, () => {
-  console.log("CONNECT AT : " + port);
+app.listen(PORT, () => {
+  console.log("CONNECT AT : " + PORT);
 });
 module.exports = { app };

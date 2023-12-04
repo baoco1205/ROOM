@@ -30,6 +30,9 @@ var checkLogin = function (req, res, next) {
       if (!data) {
         res.json("WRONG PASSWORD OR USERNAME");
       }
+      if (data.deleted === 1) {
+        return res.json({ message: "Your accounter is deleted" });
+      }
       bcrypt.compare(password, data.password, function (err, result) {
         if (err) {
           res.json("WRONG PASSWORD OR USERNAME");
@@ -39,7 +42,7 @@ var checkLogin = function (req, res, next) {
         }
         var id = data._id.toString();
         let token = jwt.sign({ id }, KEY_TOKEN.keyToken, {
-          expiresIn: "12h",
+          expiresIn: "2d",
         });
         // console.log(token);
         const { password, ...other } = data._doc;

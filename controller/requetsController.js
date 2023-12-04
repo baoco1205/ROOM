@@ -2,7 +2,7 @@ const express = require("express");
 const Joi = require("@hapi/joi").extend(require("@hapi/joi-date"));
 const mongoose = require("mongoose");
 const requestModel = require("../models/requests");
-const { STATUS, CHECKSCHEMA, REQUEST, SESSION } = require("../CONST");
+const { STATUS, CHECK_SCHEMA, REQUEST, SESSION } = require("../CONST");
 
 const { request } = require("chai");
 
@@ -135,7 +135,7 @@ let createRequest = (req, res, next) => {
   // date = date.split("T")[0];
   console.log(date);
 
-  CHECKSCHEMA.CREATESCHEMA.validateAsync(req.body, {
+  CHECK_SCHEMA.CREATE_REQUEST_SCHEMA.validateAsync(req.body, {
     allowUnknown: false,
   })
     .then((payload) => {
@@ -190,7 +190,7 @@ var deleteRequest = (req, res, next) => {
 };
 
 let updateRequest = (req, res, next) => {
-  CHECKSCHEMA.UPDATESCHEMA.validateAsync(req.body, {
+  CHECKSCHEMA.UPDATEREQUESTSCHEMA.validateAsync(req.body, {
     allowUnknown: false,
   })
     .then((payload) => {
@@ -198,11 +198,13 @@ let updateRequest = (req, res, next) => {
       let { date, session, floor, _id } = req.body;
       let now = new Date();
       date = new Date(date);
+
       if (date < now) {
         return res.json({
           message: "The chosen date must be greater than the current date. ",
         });
       }
+
       return requestModel
         .findOne({
           _id: new mongoose.Types.ObjectId(_id),
@@ -211,7 +213,6 @@ let updateRequest = (req, res, next) => {
           session,
         })
         .then(async (data2) => {
-          console.log("dataaaaaaa:" + data2);
           if (!data2) {
             return requestModel
               .findByIdAndUpdate(_id, {
@@ -226,6 +227,7 @@ let updateRequest = (req, res, next) => {
                 return res.json({ message: "this request update success" });
               });
           }
+
           res.json({
             message: "this request is busy, pls choose another time",
           });
@@ -244,7 +246,7 @@ var cancelRequest = (req, res, next) => {
 
   //////////
 
-  CHECKSCHEMA.CANCELSCHEMA.validateAsync(req.body, {
+  CHECKSCHEMA.CANCELREQUESTSCHEMA.validateAsync(req.body, {
     allowUnknown: false,
   })
     .then((payload) => {

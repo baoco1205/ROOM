@@ -2,8 +2,12 @@ const roomsModel = require("../models/rooms");
 const Joi = require("@hapi/joi");
 const usersModel = require("../models/users");
 const checkRole = require("../middleware/checkRole");
+const { validate } = require("../models/requests");
+const { validateAsync } = require("@hapi/joi/lib/base");
 const FREE = 1;
 const DOING = 0;
+//const
+const { CHECKSCHEMA } = require("../CONST");
 var getRoom = (req, res) => {
   var { status, roomSize } = req.body;
   if ((status, roomSize)) {
@@ -56,36 +60,26 @@ var createRoom = (req, res) => {
   var { roomSize, numberCustomer, floor } = req.body;
 
   //status có 2 dạng free =0 or doing =1
-  var roomSchema = Joi.object({
-    roomSize: Joi.number().max(30).required(),
-    numberCustomer: Joi.number().required(),
-    floor: Joi.number().min(1).max(50).required(),
-  });
-  try {
-    const { error } = roomSchema.validate(req.body, { allowUnknown: false });
-    if (error) {
-      // Nếu có lỗi, trả về mã lỗi 400 và thông báo lỗi
-      return res.status(400).json({ message: error.message });
-    }
-  } catch (err) {
-    var error = new Error(err);
-    error.statusCode = 400;
-    throw error;
-  }
-
-  roomsModel
-    .create({
-      roomSize: roomSize,
-      numberCustomer: numberCustomer,
-      floor: floor,
-      status: 0,
-      deleted: 0,
+  CHECKSCHEMA.CREATEROOMSCHEMA.validateAsync(req.body, { allowUnknown: false })
+    .then((payload) => {
+      roomsModel
+        .create({
+          roomSize: roomSize,
+          numberCustomer: numberCustomer,
+          floor: floor,
+          status: 0,
+          deleted: 0,
+        })
+        .then((data) => {
+          var id = data._id;
+          res.json({ message: "Create room complete!!", id: id });
+        });
     })
-    .then((data) => {
-      var id = data._id;
-      res.json({ message: "Create room complete!!", id: id });
-    })
-    .catch((err) => res.status(500).json("Create fails, have error: " + err));
+    .catch((err) => {
+      var error = new Error();
+      error.statusCode = 400;
+      throw error;
+    });
 };
 
 var updateRoom = (req, res) => {
