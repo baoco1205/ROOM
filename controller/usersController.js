@@ -6,6 +6,7 @@ const checkAuth = require("../middleware/checkPassport");
 const { ROLE, CHECK_SCHEMA } = require("../CONST.js");
 const usersModel = require("../models/users");
 const without = require("../controller/without");
+const response = require("./response.js");
 //middware
 // routerUsers.use(checkAuth.checkAuth);
 //
@@ -14,44 +15,39 @@ var getMyInfo = (req, res, next) => {
   usersModel
     .findOne({ username: username })
     .then((data) => {
-      res.json(data);
+      response.response(res, data, "Get info success");
     })
     .catch((err) => {
-      var error = new Error("NOT TRUE THIS PART");
-      error.statusCode = 400;
-      throw error;
+      response.responseError(res, err, 400);
     });
 };
 var getUser = async (req, res) => {
   let { role } = req.user;
   if (role <= 1) {
-    return res.json({
-      succcess: false,
-      message: "Your role not enought to do this!",
-    });
+    return response.response(
+      res,
+      undefined,
+      "Your role not enough to do this!"
+    );
   }
   if (role === ROLE.MANAGER) {
     usersModel
       .find({ deleted: 0, role: { $lt: ROLE.MANAGER } })
       .then((data) => {
-        return res.json({ message: true, data: data });
+        response.response(res, data);
       })
       .catch((err) => {
-        let error = new Error(err);
-        error.statusCode = 400;
-        throw error;
+        response.responseError(res, err, 404);
       });
   }
   if (role === ROLE.ADMIN) {
     usersModel
       .find({ deleted: 0, role: { $lt: ROLE.ADMIN } })
       .then((data) => {
-        return res.json({ message: true, data: data });
+        response.response(res, data);
       })
       .catch((err) => {
-        let error = new Error(err);
-        error.statusCode = 400;
-        throw error;
+        response.responseError(res, err, 404);
       });
   }
 };
@@ -60,12 +56,10 @@ var findUser = (req, res, next) => {
   usersModel
     .findOne({ username: username })
     .then((user) => {
-      res.json({ user: user });
+      response.response(res, user);
     })
     .catch((err) => {
-      let error = new Error(err);
-      error.statusCode = 400;
-      throw error;
+      response.responseError(res, err, 404);
     });
 };
 var createUser = async (req, res) => {
@@ -76,7 +70,7 @@ var createUser = async (req, res) => {
     .then((payload) => {
       usersModel.findOne({ username: username }).then(async (data) => {
         if (data) {
-          res.json("User name has been used");
+          response.response(res, undefined, "User name has been used");
         } else {
           let salt = await brypt.genSalt(10);
           let hashPassword = await brypt.hash(password, salt);
@@ -94,15 +88,14 @@ var createUser = async (req, res) => {
             .then((data) => {
               const user = without.withoutPassword(data);
               console.log(data);
-              res.json({ message: "Create success", data: user });
+              response.response(res, user, "CREATE SUCCESS");
+              // res.json({ message: "Create success", data: user });
             });
         }
       });
     })
     .catch((err) => {
-      var error = new Error("CREATE FAILS!!!: " + err);
-      error.statusCode = 500;
-      throw error;
+      response.responseError(res, err, 500);
     });
 };
 //UPDATE INFO
@@ -116,7 +109,7 @@ var updateUser = async (req, res) => {
       var salt = await brypt.genSalt(10);
       var hashPassword = await brypt.hash(password, salt);
       password = hashPassword;
-      if (role >= ROLE.ADMIN) {
+      if (role === ROLE.ADMIN) {
         usersModel
           .findByIdAndUpdate(
             {
@@ -134,26 +127,42 @@ var updateUser = async (req, res) => {
           )
           .then((data) => {
             if (data) {
-              console.log(data);
-              res.json({
-                message: "update success",
-                data: without.withoutPassword(data),
-              });
+              // console.log(data);
+              data = without.withoutPassword(data);
+              let message = "CREATE SUCCESS";
+              response.response(res, data, message);
             } else if ((data = null)) {
               console.log(data);
-              res.json("update FAILS");
+              response.response(
+                res,
+                data,
+                "update fails, pls recheck id need update"
+              );
             }
           });
-      } else if (role >= MANAGER_ROLE) {
-        usersModel.findByIdAndUpdate({ _id: id }).then((data) => {});
+      } else if (role === MANAGER_ROLE) {
+        usersModel.findByIdAndUpdate({ _id: id }).then((data) => {
+          if (!data) {
+            return response.response(
+              res,
+              undefined,
+              "Don't have id you want find"
+            );
+          }
+          if (data.role >= MANAGER_ROLE) {
+            response.response(
+              res,
+              undefined,
+              "Can't update account equal your role"
+            );
+          }
+        });
       } else if (role <= 1) {
-        res.json("YOUR ROLE NOT ENOUGH");
+        response.response(res, undefined, "YOUR ROLE NOT ENOUGH");
       }
     })
     .catch((err) => {
-      var error = new Error("CREATE FAILS!!!: " + err);
-      error.statusCode = 500;
-      throw error;
+      response.responseError(res, err, 500);
     });
 };
 
@@ -182,14 +191,12 @@ var updateMySelf = async (req, res) => {
         )
         .then((data) => {
           if (data) {
-            res.json({ message: "Update success", data: data });
+            response.response(res, data, "Update success");
           }
         });
     })
     .catch((err) => {
-      let error = new Error(err);
-      error.statusCode = 400;
-      throw error;
+      response.responseError(res, err, 500);
     });
 };
 var deleteUser = (req, res) => {
@@ -199,14 +206,12 @@ var deleteUser = (req, res) => {
     .then((data) => {
       console.log(data);
       if (data.deletedCount === 0) {
-        return res.json({ message: "DON'T HAVE ID TO DELETE" });
+        response.response(res, undefined, "DON'T HAVE ID TO DELETE");
       }
-      return res.json({ message: "DELETE SUCCESS" });
+      response.response(res, undefined, "DELETE SUCCESS");
     })
     .catch((err) => {
-      var error = new Error("DELETE USER FAILS :" + err);
-      error.statusCode = 500;
-      throw error;
+      response.responseError(res, err, 500);
     });
 };
 var createCustomer = (req, res) => (req, res) => {
@@ -242,7 +247,6 @@ var createCustomer = (req, res) => (req, res) => {
 };
 
 var sortByName = (req, res, next) => {
-  var sortSchema;
   usersModel
     .find({})
     .then((data) => {
@@ -251,13 +255,10 @@ var sortByName = (req, res, next) => {
       let fullName = name.split(" ");
       console.log(name, fullName);
       let lastName = fullName[fullName.length - 1];
-      return lastName;
     })
-    .sort({ name: 1 })
+
     .catch((err) => {
-      const error = new Error(err);
-      error.statusCode = 401;
-      throw error;
+      response.responseError(res, err, 400);
     });
 };
 let softDelete = (req, res, next) => {
@@ -266,16 +267,14 @@ let softDelete = (req, res, next) => {
     .find({ _id: id, deleted: 0 })
     .then((data) => {
       if (data.length === 0) {
-        return res.json({ message: "User already deleted" });
+        response.response(res, undefined, "User already deleted");
       }
       usersModel.findByIdAndUpdate(id, { deleted: 1 }).then((data) => {
-        res.json({ message: "User delete success" });
+        response.response(res, undefined, "User delete success");
       });
     })
     .catch((err) => {
-      const error = new Error(err);
-      error.statusCode = 401;
-      throw error;
+      response.responseError(res, err, 500);
     });
 };
 module.exports = {
@@ -289,3 +288,9 @@ module.exports = {
   updateMySelf,
   sortByName,
 };
+
+// var arr = [1, 2, 34, 4, 5];
+// var bb = [...arr, 1];
+// var cc = function (...params) {
+//   console.log(params);
+// };

@@ -13,6 +13,8 @@
 //     error.statusCode = 400;
 //     throw error;
 //   });
-require("dotenv").config();
-let test = process.env.port;
-console.log(test);
+let queryCondition = {};
+let dieuKienLoc = req.body;
+Object.keys(dieuKienLoc).forEach((key) => {
+  queryCondition[key] = dieuKienLoc[key];
+});

@@ -1,21 +1,32 @@
 const express = require("express");
 var routerReport = express.Router();
+const routerReportFirst = express.Router();
 const reportControl = require("../controller/reportController");
+const { checkAuth } = require("../middleware/checkPassport");
 
 const checkRole = require("../middleware/checkRole");
 
-routerReport.get("/report", reportControl.getReport);
-routerReport.get("/report/myreport", reportControl.getMyReport);
+routerReportFirst.use("/report", checkAuth, routerReport);
+routerReport.get(
+  "/getreport",
+  checkRole.checkRoleManager,
+  reportControl.getReport
+);
+routerReport.get(
+  "/myreport",
+  checkRole.checkRoleUser,
+  reportControl.getMyReport
+);
 routerReport.post(
-  "/report",
+  "/createreport",
   checkRole.checkRoleUser,
   reportControl.createReport
 );
-routerReport.put("/report", reportControl.updateReport);
+routerReport.put("/updatereport", reportControl.updateReport);
 routerReport.delete(
-  "/report",
+  "/deletereport",
   checkRole.checkRoleManager,
   reportControl.deleteReport
 );
 
-module.exports = routerReport;
+module.exports = routerReportFirst;

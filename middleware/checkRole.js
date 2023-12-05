@@ -54,7 +54,7 @@ var checkRoleManager = async function (req, res, next) {
 
   // console.log("role:::::" + role);
   var role = parseInt(req.user.role);
-  console.log(role);
+  // console.log(role);
   if (role >= 2) {
     console.log("Pass check role");
     next();

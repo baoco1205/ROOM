@@ -3,99 +3,50 @@ const reportsModel = require("../models/reports");
 const roomsModel = require("../models/rooms");
 const usersModel = require("../models/users");
 const checkRole = require("../middleware/checkRole");
-const UNSENT = 0;
-const SENT = 1;
+const Joi = require("@hapi/joi");
+const { REPORT_SENT, NOW, DELETE, CHECK_SCHEMA } = require("../CONST");
+const response = require("./response");
 
 var getReport = (req, res, next) => {
-  var { key, keyValue } = req.body;
-  var role = req.user.data.role;
-
-  if (role >= 3) {
-    if (key) {
-      if (key === "username") {
-        reportsModel
-          .find({ username: keyValue })
-          .then((data) => {
-            console.log("TOI DAY R ");
-            res.json({ message: "GET REPORT SUCCESS", data: data });
-          })
-          .catch((err) => {
-            var error = new Error("CAN'T NOT GET REPORT" + err);
-            error.statusCode = 400;
-            throw error;
-          });
-      } else if (key === "date") {
-        reportsModel
-          .find({ date: keyValue })
-          .then((data) => {
-            res.json({ message: "GET REPORT SUCCESS", data: data });
-          })
-          .catch((err) => {
-            var error = new Error("CAN'T NOT GET REPORT" + err);
-            error.statusCode = 400;
-            throw error;
-          });
-      }
-    } else {
-      reportsModel
-        .find({})
-        .then((data) => {
-          res.json({ message: "GET REPORT SUCCESS", data: data });
-        })
-        .catch((err) => {
-          var error = new Error("CAN'T NOT GET REPORT: " + err);
-          error.statusCode = 400;
-          throw error;
-        });
-    }
-  } else if (role >= 2) {
-    if (key) {
-      if (key === "username") {
-        console.log("vao day k ");
-        reportsModel
-          .find({ username: keyValue })
-          .then((data) => {
-            res.json({ message: "GET REPORT SUCCESS", data: data });
-          })
-          .catch((err) => {
-            var error = new Error("CAN'T NOT GET REPORT" + err);
-            error.statusCode = 400;
-            throw error;
-          });
-      } else if (key === "date") {
-        reportsModel
-          .find({ date: keyValue })
-          .then((data) => {
-            res.json({ message: "GET REPORT SUCCESS", data: data });
-          })
-          .catch((err) => {
-            var error = new Error("CAN'T NOT GET REPORT" + err);
-            error.statusCode = 400;
-            throw error;
-          });
-      }
-    } else {
-      reportsModel
-        .find({})
-        .then((data) => {
-          res.json({ message: "GET REPORT SUCCESS", data: data });
-        })
-        .catch((err) => {
-          var error = new Error("CAN'T NOT GET REPORT" + err);
-          error.statusCode = 400;
-          throw error;
-        });
-    }
-  } else {
-    res.json({ message: "YOUR ROLE NOT ENOUGH" });
+  let { username, id } = req.body;
+  if (username || id) {
+    let dieuKienLoc = req.body;
+    let condition = {};
+    Object.keys(dieuKienLoc).forEach((key) => {
+      condition[key] = dieuKienLoc[key];
+    });
+    console.log(condition);
+    reportsModel
+      .find({ condition })
+      .then((data) => {
+        if (data.length === 0)
+          return response.response(res, undefined, "Pls try input condition");
+      })
+      .catch((err) => {
+        return response.responseError(res, err);
+      });
   }
+  reportsModel
+    .find()
+    .then((data) => {
+      if (data.length === 0)
+        return response.response(
+          undefined,
+          undefined,
+          "Don't have condition satisfy"
+        );
+      return response.response(res, data);
+    })
+    .catch((err) => {
+      return response.responseError(res, err);
+    });
 };
 var getMyReport = (req, res, next) => {
-  var username = req.user.data.username;
+  var username = req.user.username;
   reportsModel
     .find({ username: username })
     .then((data) => {
-      res.json({ message: "GET SUCCESS", data: data });
+      response.response(res, data, "Get report success");
     })
     .catch((err) => {
       var error = new Error("CAN'T NOT GET YOUR REPORT" + err);
@@ -105,24 +56,34 @@ var getMyReport = (req, res, next) => {
 };
 var createReport = (req, res, next) => {
   // var dateCreate = new Date().toLocaleString("vi-VN");
-  var dateCreate = new Date();
-  var deleted = 0;
-  var username = req.user.data.username;
+  var dateCreate = NOW;
+  let { username } = req.user;
 
   var { numberParty, info, contractsNumber, date } = req.body;
-
-  reportsModel
-    .create({
-      numberParty: numberParty,
-      info: info,
-      contractsNumber: contractsNumber,
-      username: username,
-      date: date,
-      dateCreate: dateCreate,
-      deleted: deleted,
-    })
-    .then((data) => {
-      res.json({ message: "CREATE SUCCESS" });
+  CHECK_SCHEMA.CHECK_CREATE_REPORT.validateAsync(req.body, {
+    allowUnknown: false,
+  })
+    .then((payload) => {
+      reportsModel
+        .aggregate([{ $match: { dateCreate: dateCreate } }])
+        .then((data) => {
+          if (data) {
+            return res.json({ message: "Today you already reported" });
+          }
+          reportsModel
+            .create({
+              numberParty: numberParty,
+              info: info,
+              contractsNumber: contractsNumber,
+              username: username,
+              date: date,
+              dateCreate: NOW,
+              deleted: DELETE.UNDELETED,
+            })
+            .then((data) => {
+              res.json({ message: "CREATE SUCCESS", data: data });
+            });
+        });
     })
     .catch((err) => {
       var error = new Error("CREATE REPORT FAILS: " + err);

@@ -182,8 +182,8 @@ passport.use(
   "jwt",
   new JwtStrategy(opts, async function (jwt_payload, done) {
     try {
-      console.log("jwt_payload", jwt_payload);
-      console.log("sub+++++" + jwt_payload.id);
+      // console.log("jwt_payload", jwt_payload);
+      // console.log("sub+++++" + jwt_payload.id);
       // console.log("XXXXXXXXXXXX");
       const login = await userModel.findById(jwt_payload.id);
       if (login) return done(null, login);

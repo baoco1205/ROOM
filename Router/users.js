@@ -42,7 +42,7 @@ routerUsers.post(
   userController.softDelete
 );
 routerUsers.post(
-  "/sortusers",
+  "/users/sortusers",
   checkRole.checkRoleUser,
   userController.sortByName
 );

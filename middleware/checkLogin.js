@@ -28,7 +28,7 @@ var checkLogin = function (req, res, next) {
     .findOne({ username: username })
     .then((data) => {
       if (!data) {
-        res.json("WRONG PASSWORD OR USERNAME");
+        return res.json("WRONG PASSWORD OR USERNAME");
       }
       if (data.deleted === 1) {
         return res.json({ message: "Your accounter is deleted" });

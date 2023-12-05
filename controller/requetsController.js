@@ -2,8 +2,8 @@ const express = require("express");
 const Joi = require("@hapi/joi").extend(require("@hapi/joi-date"));
 const mongoose = require("mongoose");
 const requestModel = require("../models/requests");
-const { STATUS, CHECK_SCHEMA, REQUEST, SESSION } = require("../CONST");
-
+const { STATUS, CHECK_SCHEMA, REQUEST, SESSION, NOW } = require("../CONST");
+const response = require("./response");
 const { request } = require("chai");
 
 var getRequestTest = (req, res, next) => {
@@ -54,80 +54,46 @@ var getRequestTest = (req, res, next) => {
 var getRequest = (req, res, next) => {};
 var findRequest = async (req, res, next) => {
   const { date, session, floor, dateStart, dateEnd } = req.body;
-  //////// check tinh hop le
-  const getSchema = Joi.object({
-    date: Joi.date().format("YYYY-MM-DD"),
-    dateStart: Joi.date().format("YYYY-MM-DD").required(),
-    dateEnd: Joi.date().format("YYYY-MM-DD").required(),
-    session: Joi.number().valid(SESSION.MORNING, SESSION.EVENING),
-    floor: Joi.number().valid(1, 2, 3, 4, 5),
-    _id: Joi.string(),
-    status: Joi.string().valid(REQUEST.OFF, REQUEST.ON, REQUEST.DOING),
-  });
-  try {
-    const { error, value } = getSchema.validate(req.body, {
-      allowUnknown: false,
-    });
-    if (error) {
-      return res.status(400).json({ error: error.details[0].message });
-    }
-  } catch (err) {
-    var error = new Error(err);
-    error.statusCode = 400;
-    throw error;
-  }
-  ////////
 
-  const dieuKienLoc = req.body;
-  const queryConditions = {};
+  CHECK_SCHEMA.FIND_SCHEMA.validateAsync(req.body, { allowUnknown: false })
+    .then((payload) => {
+      const dieuKienLoc = req.body;
+      const queryConditions = {};
 
-  Object.keys(dieuKienLoc).forEach((key) => {
-    queryConditions[key] = dieuKienLoc[key];
-  });
-  if (dieuKienLoc.dateStart && dieuKienLoc.dateEnd) {
-    if (dieuKienLoc.dateStart > dieuKienLoc.dateEnd) {
-      return res.json({ message: "date start must before date end " });
-    }
-    let dateStart = new Date(dieuKienLoc.dateStart);
-    let dateEnd = new Date(dieuKienLoc.dateEnd);
+      Object.keys(dieuKienLoc).forEach((key) => {
+        queryConditions[key] = dieuKienLoc[key];
+      });
+      if (dieuKienLoc.dateStart && dieuKienLoc.dateEnd) {
+        if (dieuKienLoc.dateStart > dieuKienLoc.dateEnd) {
+          respose;
+          return res.json({ message: "date start must before date end " });
+        }
+        let dateStart = new Date(dieuKienLoc.dateStart);
+        let dateEnd = new Date(dieuKienLoc.dateEnd);
 
-    queryConditions.date = {
-      $gte: dateStart.toISOString(),
-      $lte: dateEnd.toISOString(),
-    };
-    delete queryConditions.dateStart;
-    delete queryConditions.dateEnd;
-  }
-
-  // if (dieuKienLoc.dateStart) {
-  //   let dateStart = new Date(dieuKienLoc.dateStart);
-  //   queryConditions.date = {
-  //     $gte: dateStart.toISOString(),
-  //   };
-  //   delete queryConditions.dateStart;
-  // }
-  // if (dieuKienLoc.dateEnd) {
-  //   let dateEnd = new Date(dieuKienLoc.dateEnd);
-  //   queryConditions.date = { $lte: dateEnd.toISOString() };
-  //   delete queryConditions.dateEnd;
-  // }
-
-  console.log(queryConditions);
-
-  requestModel
-    .find(queryConditions) //=> .find({session:0, date:'abcyxz'})
-    .then((data) => {
-      if (data.length === 0) {
-        return res.json({
-          message: "Don't have request this time satisfy condition.",
-        });
+        queryConditions.date = {
+          $gte: dateStart.toISOString(),
+          $lte: dateEnd.toISOString(),
+        };
+        delete queryConditions.dateStart;
+        delete queryConditions.dateEnd;
       }
-      res.json({ data: data });
+      console.log(queryConditions);
+      requestModel
+        .find(queryConditions) //=> .find({session:0, date:'abcyxz'})
+        .then((data) => {
+          if (data.length === 0) {
+            response.response(
+              res,
+              undefined,
+              "Don't have request this time satisfy condition."
+            );
+          }
+          response.response(res, data);
+        });
     })
     .catch((err) => {
-      var error = new Error(err);
-      error.statusCode = 400;
-      throw error;
+      response.responseError(res, err, 400);
     });
 };
 let createRequest = (req, res, next) => {
@@ -139,12 +105,14 @@ let createRequest = (req, res, next) => {
     allowUnknown: false,
   })
     .then((payload) => {
-      let now = new Date();
+      let now = NOW;
       let checkDate = new Date(date);
-      if (checkDate < now) {
-        return res.json({
-          message: "The day you chose must belongs to the present or future",
-        });
+      if (checkDate < NOW) {
+        response.response(
+          res,
+          undefined,
+          "The day you chose must belongs to the present or future"
+        );
       }
 
       requestModel
@@ -163,15 +131,13 @@ let createRequest = (req, res, next) => {
                 deleted: 0,
               })
               .then((data) => {
-                res.json({ message: "CREATE SUCCESS", data: data });
+                response.response(res, data, "CREATE SUCCESS");
               });
           }
         });
     })
     .catch((err) => {
-      var error = new Error("ERR IS: " + err);
-      error.statusCode = 404;
-      throw error;
+      response.responseError(res, err, 400);
     });
 };
 
@@ -180,29 +146,29 @@ var deleteRequest = (req, res, next) => {
   requestModel
     .deleteMany({ _id: { $in: idList } })
     .then((data) => {
-      res.json({ message: "DELETE SUCCESS", data: data });
+      response.response(res, data, "DELETE SUCCESS");
     })
     .catch((err) => {
-      var error = new Error();
-      error.statusCode = 404;
-      throw error;
+      response.responseError(res, err, 400);
     });
 };
 
 let updateRequest = (req, res, next) => {
-  CHECKSCHEMA.UPDATEREQUESTSCHEMA.validateAsync(req.body, {
+  CHECK_SCHEMA.UPDATEREQUESTSCHEMA.validateAsync(req.body, {
     allowUnknown: false,
   })
     .then((payload) => {
       req.body = payload;
       let { date, session, floor, _id } = req.body;
-      let now = new Date();
+      let now = NOW;
       date = new Date(date);
 
       if (date < now) {
-        return res.json({
-          message: "The chosen date must be greater than the current date. ",
-        });
+        response.response(
+          res,
+          undefined,
+          "The chosen date must be greater than the current date. "
+        );
       }
 
       return requestModel
@@ -222,22 +188,24 @@ let updateRequest = (req, res, next) => {
               })
               .then((data3) => {
                 if (!data3) {
-                  return res.json({ success: false, message: "no record" });
+                  response.response(res, undefined, "no record");
                 }
-                return res.json({ message: "this request update success" });
+                response.response(
+                  res,
+                  undefined,
+                  "this request update success"
+                );
               });
           }
-
-          res.json({
-            message: "this request is busy, pls choose another time",
-          });
+          response.response(
+            res,
+            undefined,
+            "this request is busy, pls choose another time"
+          );
         });
     })
     .catch((err) => {
-      var error = new Error(err);
-      error.statusCode = 400;
-      res.json({ success: false });
-      throw error;
+      response.responseError(res, err, 400);
     });
 };
 
@@ -246,7 +214,7 @@ var cancelRequest = (req, res, next) => {
 
   //////////
 
-  CHECKSCHEMA.CANCELREQUESTSCHEMA.validateAsync(req.body, {
+  CHECK_SCHEMA.CANCEL_REQUEST_SCHEMA.validateAsync(req.body, {
     allowUnknown: false,
   })
     .then((payload) => {
@@ -254,7 +222,7 @@ var cancelRequest = (req, res, next) => {
         .findOne({ date: date, session: session, floor: floor })
         .then((data) => {
           if (!data) {
-            res.json({ message: "PLS CHECK ORDER NEED CANCEL" });
+            response.response(res, undefined, "PLS CHECK ORDER NEED CANCEL");
           }
           if (data.status != REQUEST.OFF) {
             requestModel
@@ -265,20 +233,17 @@ var cancelRequest = (req, res, next) => {
               .then((data) => {
                 console.log(data);
                 if (!data) {
-                  res.json({ message: "pls recheck input " });
+                  response.response(res, undefined, "pls recheck input ");
                 }
-                res.json({ message: "cancel success", data: data });
+                response.response(res, data, "cancel success");
               });
           } else {
-            res.json({ mesage: "this order already cancel", data: data });
+            response.response(res, data, "this order already cancel");
           }
         });
     })
     .catch((err) => {
-      var error = new Error(err);
-      error.statusCode = 400;
-      res.json({ success: false });
-      throw error;
+      response.responseError(res, err, 400);
     });
 
   //////////

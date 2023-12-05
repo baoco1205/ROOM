@@ -26,7 +26,7 @@ routerRequests.post(
   requestController.findRequest
 );
 routerRequests.post(
-  "/request",
+  "/request/booking",
   checkRole.checkRoleUser,
   requestController.createRequest
 );

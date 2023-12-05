@@ -10,7 +10,7 @@ const localStrategy = require("passport-local").Strategy;
 const session = require("express-session");
 const { KEY_TOKEN } = require("./CONST.js");
 //ROUTER
-var reportsRouter = require("./Router/report.js");
+var routerReportFirst = require("./Router/report.js");
 var usersRouter = require("./Router/users.js");
 var roomsRouter = require("./Router/rooms.js");
 var requestsRouter = require("./Router/requests.js");
@@ -29,7 +29,8 @@ app.use(cookieParser());
 // config body parser
 var bodyParser = require("body-parser");
 const { fail } = require("assert");
-const checkLogin = require("./controller/checkLogin.js");
+const checkLogin = require("./middleware/checkLogin.js");
+const response = require("./controller/response.js");
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -61,9 +62,7 @@ app.post(
   checkLogin.checkLogin,
   calendarLogin.saveTimeLogin,
   (req, res, next) => {
-    res.status(200).json({
-      data: req.user,
-    });
+    response.response(res, req.user);
   }
 );
 //CRUD
@@ -71,7 +70,7 @@ app.post(
 app.use("/api/v1", usersRouter);
 app.use("/api/v1", roomsRouter);
 app.use("/api/v1", requestsRouter);
-app.use("/api/v1", reportsRouter);
+app.use("/api/v1", routerReportFirst);
 
 const PORT = process.env.port;
 

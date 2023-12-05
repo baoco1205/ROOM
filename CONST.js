@@ -29,6 +29,12 @@ const CHECK_SCHEMA = {
     // status: Joi.number().required(),
     floor: Joi.number().valid(1, 2, 3, 4, 5).required(),
   }),
+  CHECK_CREATE_REPORT: Joi.object({
+    numberParty: Joi.number().required(),
+    info: Joi.string().max(300),
+    contractsNumber: Joi.number().required(),
+    date: Joi.date().format("YYYY-MM-DD"),
+  }),
   UPDATE_REQUEST_SCHEMA: Joi.object({
     date: Joi.date().format("YYYY-MM-DD").required(),
     session: Joi.number().valid(SESSION.MORNING, SESSION.EVENING).required(),
@@ -97,8 +103,29 @@ const CHECK_SCHEMA = {
     address: Joi.string().alphanum().min(3).max(100).optional(),
     note: Joi.string().alphanum().max(500).optional(),
   }),
+  FIND_SCHEMA: Joi.object({
+    date: Joi.date().format("YYYY-MM-DD"),
+    dateStart: Joi.date().format("YYYY-MM-DD").required(),
+    dateEnd: Joi.date().format("YYYY-MM-DD").required(),
+    session: Joi.number().valid(SESSION.MORNING, SESSION.EVENING),
+    floor: Joi.number().valid(1, 2, 3, 4, 5),
+    _id: Joi.string(),
+    status: Joi.string().valid(REQUEST.OFF, REQUEST.ON, REQUEST.DOING),
+  }),
 };
-
+const REPORT_SENT = {
+  UNSENT: 0,
+  SENT: 1,
+};
+//CO XU LY
+//DATE
+var dateCreate = new Date();
+var localizedDateString = dateCreate.toLocaleString("vi-VN");
+var dateFromLocalized = new Date(localizedDateString);
+dateFromLocalized.setHours(dateFromLocalized.getHours() + 7);
+// console.log(dateFromLocalized.toISOString());
+const NOW = dateFromLocalized;
+///////
 const PORT = 3000;
 module.exports = {
   PORT,
@@ -109,4 +136,6 @@ module.exports = {
   REQUEST,
   SESSION,
   CHECK_SCHEMA,
+  NOW,
+  REPORT_SENT,
 };
