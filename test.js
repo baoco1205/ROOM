@@ -13,8 +13,17 @@
 //     error.statusCode = 400;
 //     throw error;
 //   });
-let queryCondition = {};
-let dieuKienLoc = req.body;
-Object.keys(dieuKienLoc).forEach((key) => {
-  queryCondition[key] = dieuKienLoc[key];
-});
+
+//////
+// let queryCondition = {};
+// let dieuKienLoc = req.body;
+// Object.keys(dieuKienLoc).forEach((key) => {
+//   queryCondition[key] = dieuKienLoc[key];
+// });
+//////
+let isBooking = {};
+isBooking.isBooking = true;
+console.log(isBooking);
+
+const data = { isBooking: true };
+console.log(data);

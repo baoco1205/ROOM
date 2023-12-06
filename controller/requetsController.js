@@ -96,6 +96,35 @@ var findRequest = async (req, res, next) => {
       response.responseError(res, err, 400);
     });
 };
+let isBooking = (req, res, next) => {
+  let { session, date, floor } = req.body;
+  CHECK_SCHEMA.IS_BOOKING_SCHEMA.validateAsync(req.body, {
+    allowUnknown: false,
+  })
+    .then((payload) => {
+      requestModel
+        .findOne({ session: session, date: date, floor: floor })
+        .then((data) => {
+          // console.log(data);
+          let isBooking = {};
+
+          if (!data) {
+            isBooking.is_Booking = true;
+            return response.response(
+              res,
+              isBooking,
+              "This booking can be order."
+            );
+          } else {
+            isBooking.is_Booking = false;
+            return response.response(res, isBooking, "Your booking is busy.");
+          }
+        });
+    })
+    .catch((err) => {
+      response.responseError(res, err, 404);
+    });
+};
 let createRequest = (req, res, next) => {
   var { date, numberCustomer, status, floor, session } = req.body;
   // date = date.split("T")[0];
@@ -256,4 +285,5 @@ module.exports = {
   getRequestTest,
   findRequest,
   cancelRequest,
+  isBooking,
 };

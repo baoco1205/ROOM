@@ -1,13 +1,12 @@
 const express = require("express");
-var routerReport = express.Router();
-const routerReportFirst = express.Router();
+const routerReport = express.Router();
 const reportControl = require("../controller/reportController");
 const { checkAuth } = require("../middleware/checkPassport");
 
 const checkRole = require("../middleware/checkRole");
 
-routerReportFirst.use("/report", checkAuth, routerReport);
-routerReport.get(
+routerReport.use("", checkAuth);
+routerReport.post(
   "/getreport",
   checkRole.checkRoleManager,
   reportControl.getReport
@@ -22,11 +21,11 @@ routerReport.post(
   checkRole.checkRoleUser,
   reportControl.createReport
 );
-routerReport.put("/updatereport", reportControl.updateReport);
-routerReport.delete(
+routerReport.post("/updatereport", reportControl.updateReport);
+routerReport.post(
   "/deletereport",
   checkRole.checkRoleManager,
   reportControl.deleteReport
 );
 
-module.exports = routerReportFirst;
+module.exports = routerReport;

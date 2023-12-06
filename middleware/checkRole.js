@@ -50,7 +50,7 @@ var checkRoleUser = async function (req, res, next) {
 var checkRoleManager = async function (req, res, next) {
   // console.log(req.user);
   // var data = await decoded.decoded(req.user.token);
-  // console.log(req.user);
+  // console.log("zzzzzzzzzzzzzzzz" + req.user.data);
 
   // console.log("role:::::" + role);
   var role = parseInt(req.user.role);

@@ -7,24 +7,24 @@ var checkRole = require("../middleware/checkRole");
 // var checkLogin = require("../controller/checkLogin");
 const checkAuth = require("../middleware/checkPassport");
 
-//middware
-routerRequests.use(checkAuth.checkAuth);
+routerRequests.post("/is_booking", requestController.isBooking);
 
-routerRequests.get(
-  "/request",
+//middware checkAuth
+routerRequests.use("", checkAuth.checkAuth);
+//
+
+routerRequests.post(
+  "/checkrequest",
   checkRole.checkRoleUser,
-  requestController.getRequest
+  requestController.findRequest
 );
+// routerRequests.get(checkRole.checkRoleUser, requestController.getRequest);
 routerRequests.post(
   "/request/cancelRequest",
   checkRole.checkRoleUser,
   requestController.cancelRequest
 );
-routerRequests.post(
-  "/request/checkrequest",
-  checkRole.checkRoleUser,
-  requestController.findRequest
-);
+
 routerRequests.post(
   "/request/booking",
   checkRole.checkRoleUser,

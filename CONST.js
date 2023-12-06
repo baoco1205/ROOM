@@ -112,6 +112,17 @@ const CHECK_SCHEMA = {
     _id: Joi.string(),
     status: Joi.string().valid(REQUEST.OFF, REQUEST.ON, REQUEST.DOING),
   }),
+  IS_BOOKING_SCHEMA: Joi.object({
+    date: Joi.date().format("YYYY-MM-DD").required(),
+    session: Joi.number().valid(SESSION.MORNING, SESSION.EVENING).required(),
+    floor: Joi.number().valid(1, 2, 3, 4, 5).required(),
+  }),
+  CHECK_UPDATE_REPORT_SCHEMA: Joi.object({
+    _id: Joi.string().required(),
+    numberParty: Joi.number().min(1).max(1000),
+    info: Joi.string(),
+    contractsNumber: Joi.number().max(40),
+  }),
 };
 const REPORT_SENT = {
   UNSENT: 0,

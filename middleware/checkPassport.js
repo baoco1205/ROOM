@@ -161,7 +161,7 @@ var checkAuth = function (req, res, next) {
       return res.status(403).json("err");
     }
     if (!user) {
-      console.log("testttttttttt1");
+      console.log("họ chưa login á m ơi");
       return res.json("U NEED LOGIN TO GO !");
     }
     if (user) {

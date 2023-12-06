@@ -8,8 +8,8 @@ const { REPORT_SENT, NOW, DELETE, CHECK_SCHEMA } = require("../CONST");
 const response = require("./response");
 
 var getReport = (req, res, next) => {
-  let { username, id } = req.body;
-  if (username || id) {
+  let { username, _id } = req.body;
+  if (username || _id) {
     let dieuKienLoc = req.body;
     let condition = {};
     Object.keys(dieuKienLoc).forEach((key) => {
@@ -17,29 +17,28 @@ var getReport = (req, res, next) => {
     });
     console.log(condition);
     reportsModel
-      .find({ condition })
+      .find(condition)
       .then((data) => {
-        if (data.length === 0)
-          return response.response(res, undefined, "Pls try input condition");
+        return response.response(res, data, "Pls try input condition");
       })
       .catch((err) => {
         return response.responseError(res, err);
       });
-  }
-  reportsModel
-    .find()
-    .then((data) => {
-      if (data.length === 0)
-        return response.response(
-          undefined,
-          undefined,
-          "Don't have condition satisfy"
-        );
-      return response.response(res, data);
-    })
-    .catch((err) => {
-      return response.responseError(res, err);
-    });
+  } else
+    reportsModel
+      .find()
+      .then((data) => {
+        if (data.length === 0)
+          return response.response(
+            undefined,
+            undefined,
+            "Don't have condition satisfy"
+          );
+        return response.response(res, data);
+      })
+      .catch((err) => {
+        return response.responseError(res, err);
+      });
 };
 var getMyReport = (req, res, next) => {
   var username = req.user.username;
@@ -81,32 +80,42 @@ var createReport = (req, res, next) => {
               deleted: DELETE.UNDELETED,
             })
             .then((data) => {
-              res.json({ message: "CREATE SUCCESS", data: data });
+              response.response(res, data);
             });
         });
     })
     .catch((err) => {
-      var error = new Error("CREATE REPORT FAILS: " + err);
-      error.statusCode = 400;
-      throw error;
+      response.responseError(res, err, 404);
     });
 };
 var updateReport = (req, res, next) => {
-  var { idReport, numberParty, info, contractsNumber } = req.body;
-
-  reportsModel
-    .findByIdAndUpdate(idReport, {
-      numberParty: numberParty,
-      info: info,
-      contractsNumber: contractsNumber,
-    })
-    .then((data) => {
-      res.json({ message: "UPDATE REPORT SUCCESS" });
+  var { _id, numberParty, info, contractsNumber } = req.body;
+  CHECK_SCHEMA.CHECK_UPDATE_REPORT_SCHEMA.validateAsync(req.body, {
+    allowUnknown: false,
+  })
+    .then((payload) => {
+      reportsModel.findById(_id).then((data) => {
+        if (!data) {
+          return response.response(res, data);
+        }
+        reportsModel
+          .findByIdAndUpdate(
+            _id,
+            {
+              numberParty: numberParty,
+              info: info,
+              contractsNumber: contractsNumber,
+            },
+            { new: true }
+          )
+          .then((data) => {
+            return response.response(res, data);
+            // return res.json({ data });
+          });
+      });
     })
     .catch((err) => {
-      var error = new Error("UPDATE REPORT FAILS: " + err);
-      error.statusCode = 400;
-      throw error;
+      response.responseError(res, err, 404);
     });
 };
 var deleteReport = (req, res) => {
@@ -115,13 +124,11 @@ var deleteReport = (req, res) => {
   reportsModel
     .deleteMany({ _id: { $in: idList } })
     .then((data) => {
-      res.json("Delete success");
+      response.response(res, data);
     })
     .catch((err) => {
-      res.status(500).json(err);
-    })
-
-    .catch((err) => {});
+      response.responseError(res, err, 404);
+    });
 };
 
 module.exports = {

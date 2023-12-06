@@ -2,6 +2,7 @@ var jwt = require("jsonwebtoken");
 const { KEY_TOKEN } = require("../CONST");
 const usersModel = require("../models/users");
 const bcrypt = require("bcrypt");
+const response = require("../controller/response");
 
 var checkLoginToken = function (req, res, next) {
   // var token = req.body.token;
@@ -52,9 +53,7 @@ var checkLogin = function (req, res, next) {
       });
     })
     .catch((err) => {
-      var error = new Error("HAS ERROR AT LOGIN: " + err);
-      error.statusCode = 500;
-      throw error;
+      response.response(res, err, 404);
     });
 };
 

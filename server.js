@@ -10,17 +10,13 @@ const localStrategy = require("passport-local").Strategy;
 const session = require("express-session");
 const { KEY_TOKEN } = require("./CONST.js");
 //ROUTER
-var routerReportFirst = require("./Router/report.js");
+var routerReport = require("./Router/report.js");
 var usersRouter = require("./Router/users.js");
 var roomsRouter = require("./Router/rooms.js");
 var requestsRouter = require("./Router/requests.js");
 
-var routerRequest = require("./controller/requetsController.js");
-
 //Controler
 const calendarLogin = require("./controller/calendarSaveLogin.js");
-// const checkPassport = require("./middleware/checkPassport.js");
-// const checkAuth = require("./controler/checkAuth.js");
 
 //config cookie Parser
 var cookieParser = require("cookie-parser");
@@ -35,21 +31,6 @@ const response = require("./controller/response.js");
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(cors({ origin: process.env.URL_CLIENT }));
-//SESSION
-// const KEY_SESSION = "SESSIONKEY";
-// app.set("trust proxy", 1); // trust first proxy
-
-// const store = session.MemoryStore();
-// app.use(
-//   session(
-//     {
-//       saveUninitialized: false,
-//       secret: KEY_SESSION,
-//       maxAge: 1000 * 30,
-//     },
-//     store
-//   )
-// );
 
 //PASSPORT
 // require("./passportConfig.js")(app);
@@ -67,10 +48,10 @@ app.post(
 );
 //CRUD
 
-app.use("/api/v1", usersRouter);
+app.use("/api/v1/users", usersRouter);
 app.use("/api/v1", roomsRouter);
-app.use("/api/v1", requestsRouter);
-app.use("/api/v1", routerReportFirst);
+app.use("/api/v1/request", requestsRouter);
+app.use("/api/v1/report", routerReport);
 
 const PORT = process.env.port;
 

@@ -7,42 +7,30 @@ const checkAuth = require("../middleware/checkPassport");
 const passport = require("passport");
 
 //middleware
-routerUsers.use("/users", checkAuth.checkAuth);
+routerUsers.use("", checkAuth.checkAuth);
 // routerUsers.use(passport.authenticate("jwt", { session: false }));
 
-routerUsers.get("/users", checkRole.checkRoleManager, userController.getUser);
-routerUsers.post(
-  "/users",
-  checkRole.checkRoleManager,
-  userController.createUser
-);
+routerUsers.get("", checkRole.checkRoleManager, userController.getUser);
+routerUsers.post("", checkRole.checkRoleManager, userController.createUser);
 //xem thong tin ban than
-routerUsers.post("/users/myinfo", userController.getMyInfo);
+routerUsers.post("/myinfo", userController.getMyInfo);
 routerUsers.post(
-  "/users/updatemyself",
+  "/updatemyself",
   // checkLogin.checkLogin,
   userController.updateMySelf
 );
 
 //update user
-routerUsers.put(
-  "/users",
-  checkRole.checkRoleManager,
-  userController.updateUser
-);
+routerUsers.put("", checkRole.checkRoleManager, userController.updateUser);
 //delete user
-routerUsers.delete(
-  "/users",
-  checkRole.checkRoleManager,
-  userController.deleteUser
-);
+routerUsers.delete("", checkRole.checkRoleManager, userController.deleteUser);
 routerUsers.post(
-  "/users/softdelete",
+  "/softdelete",
   checkRole.checkRoleManager,
   userController.softDelete
 );
 routerUsers.post(
-  "/users/sortusers",
+  "/sortusers",
   checkRole.checkRoleUser,
   userController.sortByName
 );

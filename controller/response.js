@@ -1,14 +1,12 @@
 const response = (res, data, message) => {
-  console.log(message);
   res.json({
-    message: message,
     success: true,
-    data,
+    data: data,
   });
 };
 
 const responseError = (res, error, statusCode) => {
-  if (code) res.statusCode = code;
+  if (statusCode) res.statusCode = statusCode;
   else res.statusCode = 404;
   return res.json({
     success: false,
