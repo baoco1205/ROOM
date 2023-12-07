@@ -21,9 +21,18 @@
 //   queryCondition[key] = dieuKienLoc[key];
 // });
 //////
-let isBooking = {};
-isBooking.isBooking = true;
-console.log(isBooking);
+// let isBooking = {};
+// isBooking.isBooking = true;
+// console.log(isBooking);
 
-const data = { isBooking: true };
-console.log(data);
+// const data = { isBooking: true };
+// console.log(data);
+//////
+let a = undefined;
+b = undefined;
+c = 7;
+d = 8;
+
+a = a || b || c || d;
+
+console.log(a);

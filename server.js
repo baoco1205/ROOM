@@ -14,7 +14,7 @@ var routerReport = require("./Router/report.js");
 var usersRouter = require("./Router/users.js");
 var roomsRouter = require("./Router/rooms.js");
 var requestsRouter = require("./Router/requests.js");
-
+const router = require("./Router/router.js");
 //Controler
 const calendarLogin = require("./controller/calendarSaveLogin.js");
 
@@ -31,10 +31,9 @@ const response = require("./controller/response.js");
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(cors({ origin: process.env.URL_CLIENT }));
-
+//router
+app.use("/api/v1", router);
 //PASSPORT
-// require("./passportConfig.js")(app);
-// require("./middleware/checkPassport.js")(passport);
 app.use(passport.initialize());
 // app.use(passport.session());
 //////
@@ -47,11 +46,6 @@ app.post(
   }
 );
 //CRUD
-
-app.use("/api/v1/users", usersRouter);
-app.use("/api/v1", roomsRouter);
-app.use("/api/v1/request", requestsRouter);
-app.use("/api/v1/report", routerReport);
 
 const PORT = process.env.port;
 
@@ -67,41 +61,11 @@ app.get("/home", (req, res, next) => {
   res.json("HOME PAGE");
 });
 
-// app.post("/register", (req, res, next) => {
-//   res.sendFile(path.join(__dirname, "/public/html", "register.html"));
-//   var { username, password, name, address, phone, role, note } = req.body;
-//   usersModel
-//     .findOne({ username: username })
-//     .then((data) => {
-//       if (data) {
-//         res.json("User name has been used");
-//       } else {
-//         usersModel
-//           .create({
-//             username: username,
-//             password: password,
-//             name: name,
-//             address: address,
-//             phone: phone,
-//             role: role,
-//             note: note,
-//           })
-//           .then(res.json("Create complete!!"))
-//           .catch((err) =>
-//             res.status(500).json("Create fails, have erro: " + err)
-//           );
-//       }
-//     })
-//     .catch((err) => {});
-// });
-
 app.post("/logout", (req, res, next) => {
   req.logout(function (err) {
     if (err) {
       return next(err);
     }
-    // res.redirect("/login");
-    // res.json({ status: 200, message: "LOGOUT SUCCESS" });
   });
 });
 
